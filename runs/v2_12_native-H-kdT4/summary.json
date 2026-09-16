@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_native-H-kdT4",
+  "params": 295572,
+  "best_by_valid": {
+    "valid": 98.40269966254218,
+    "test": 98.95705521472392,
+    "epoch": 175,
+    "which": "raw"
+  },
+  "last_test_raw": 98.97750511247443,
+  "last_test_ema": 98.97750511247443
+}

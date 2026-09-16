@@ -1,0 +1,12 @@
+# environment
+.venv/
+__pycache__/
+*.pyc
+
+# data (download + rebuild: see README "Setup")
+data/
+cache/
+
+# model checkpoints and training state (large; kept locally)
+*.pt
+*.pt.tmp

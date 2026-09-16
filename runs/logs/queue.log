@@ -1,0 +1,37 @@
+2026-09-15 00:12:08 queue start: jobs/baselines.txt slots={'0': 4, '1': 6}
+2026-09-15 00:23:56 queue start: jobs/main.txt slots={'0': 5, '1': 6}
+2026-09-15 00:24:18 queue start: jobs/main.txt slots={'0': 5, '1': 6}
+2026-09-15 00:24:18 launched v2_12_native-H-kdens on GPU 0: --task v2_12 --size H --teacher runs/v2_12_bcresnet-8 runs/v2_12_native-L runs/v2_12_native-M
+2026-09-15 01:28:19 launched v2_12_bcssm-7-nass-kdens on GPU 1: --task v2_12 --model bcssm-7 --noise_aware --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0 --compile --teacher runs/v2_12_bcresnet-8 runs/v2_12_native-L runs/v2_12_native-M
+2026-09-15 01:36:19 launched v1_12_bcresnet-8-s1 on GPU 1: --task v1_12 --model bcresnet-8 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0 --seed 1
+2026-09-15 01:50:19 launched v1_12_bcresnet-8-s2 on GPU 1: --task v1_12 --model bcresnet-8 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0 --seed 2
+2026-09-15 02:30:20 launched v2_35_bcresnet-8-s1 on GPU 1: --task v2_35 --model bcresnet-8 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0 --seed 1
+2026-09-15 02:30:20 launched v2_35_bcresnet-8-s2 on GPU 1: --task v2_35 --model bcresnet-8 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0 --seed 2
+2026-09-15 05:30:24 launched v2_12_native-H-kdT4 on GPU 0: --task v2_12 --size H --teacher runs/v2_12_bcresnet-8 runs/v2_12_bcresnet-8-s1 runs/v2_12_bcresnet-8-s2 runs/v2_12_native-H
+2026-09-15 05:30:24 launched v2_12_native-H-kdT4-e300 on GPU 0: --task v2_12 --size H --epochs 300 --teacher runs/v2_12_bcresnet-8 runs/v2_12_bcresnet-8-s1 runs/v2_12_bcresnet-8-s2 runs/v2_12_native-H
+2026-09-15 05:30:24 launched v1_12_native-H on GPU 1: --task v1_12 --size H
+2026-09-15 05:30:24 launched v2_35_native-H on GPU 0: --task v2_35 --size H
+2026-09-15 07:42:26 launched v2_12_native-H-nass on GPU 1: --task v2_12 --size H --noise_aware
+2026-09-15 07:42:26 launched v2_12_native-H-nass-kdens on GPU 1: --task v2_12 --size H --noise_aware --teacher runs/v2_12_bcresnet-8 runs/v2_12_native-L runs/v2_12_native-M
+2026-09-15 14:53:13 queue start: jobs/main.txt slots={'0': 5, '1': 6}
+2026-09-15 14:53:13 launched v2_12_native-H-nass-kdens on GPU 0: --task v2_12 --size H --noise_aware --teacher runs/v2_12_bcresnet-8 runs/v2_12_native-L runs/v2_12_native-M
+2026-09-15 14:53:13 launched v2_12_native-H-kdT4 on GPU 1: --task v2_12 --size H --teacher runs/v2_12_bcresnet-8 runs/v2_12_bcresnet-8-s1 runs/v2_12_bcresnet-8-s2 runs/v2_12_native-H
+2026-09-15 14:53:13 launched v2_35_native-H on GPU 1: --task v2_35 --size H
+2026-09-15 14:53:13 launched v2_12_native-H-nass on GPU 0: --task v2_12 --size H --noise_aware
+2026-09-15 18:53:18 queue empty, exiting
+2026-09-15 18:55:07 queue start: jobs/main.txt slots={'0': 6, '1': 6}
+2026-09-15 18:55:07 launched v1_12_native-L on GPU 0: --task v1_12 --size L
+2026-09-15 18:55:07 launched v1_12_native-M on GPU 1: --task v1_12 --size M
+2026-09-15 18:55:07 launched v2_35_native-L on GPU 0: --task v2_35 --size L
+2026-09-15 18:55:07 launched v2_35_native-M on GPU 1: --task v2_35 --size M
+2026-09-15 18:55:07 launched v2_12_native-H-nass-kdens-s1 on GPU 0: --task v2_12 --size H --noise_aware --seed 1 --teacher runs/v2_12_bcresnet-8 runs/v2_12_native-L runs/v2_12_native-M
+2026-09-15 18:55:07 launched v2_12_native-H-nass-kdens-s2 on GPU 1: --task v2_12 --size H --noise_aware --seed 2 --teacher runs/v2_12_bcresnet-8 runs/v2_12_native-L runs/v2_12_native-M
+2026-09-15 20:19:29 queue start: jobs/main.txt slots={'0': 6, '1': 6}
+2026-09-15 20:19:29 only jobs with unfinished teachers remain and nothing is running: ['v1_12_native-H-nass-kdens', 'v1_12_native-H-nass-kdens-s1', 'v1_12_native-H-nass-kdens-s2', 'v2_35_native-H-nass-kdens', 'v2_35_native-H-nass-kdens-s1', 'v2_35_native-H-nass-kdens-s2']; exiting
+2026-09-15 20:19:57 queue start: jobs/main.txt slots={'0': 6, '1': 6}
+2026-09-15 23:16:06 launched v1_12_native-H-nass-kdens on GPU 0: --task v1_12 --size H --noise_aware --teacher runs/v1_12_bcresnet-8 runs/v1_12_native-L runs/v1_12_native-M
+2026-09-15 23:16:06 launched v1_12_native-H-nass-kdens-s1 on GPU 1: --task v1_12 --size H --noise_aware --seed 1 --teacher runs/v1_12_bcresnet-8 runs/v1_12_native-L runs/v1_12_native-M
+2026-09-15 23:18:06 launched v1_12_native-H-nass-kdens-s2 on GPU 0: --task v1_12 --size H --noise_aware --seed 2 --teacher runs/v1_12_bcresnet-8 runs/v1_12_native-L runs/v1_12_native-M
+2026-09-16 07:12:29 launched v2_35_native-H-nass-kdens on GPU 0: --task v2_35 --size H --noise_aware --teacher runs/v2_35_bcresnet-8 runs/v2_35_native-L runs/v2_35_native-M
+2026-09-16 07:12:29 launched v2_35_native-H-nass-kdens-s1 on GPU 1: --task v2_35 --size H --noise_aware --seed 1 --teacher runs/v2_35_bcresnet-8 runs/v2_35_native-L runs/v2_35_native-M
+2026-09-16 07:12:29 launched v2_35_native-H-nass-kdens-s2 on GPU 0: --task v2_35 --size H --noise_aware --seed 2 --teacher runs/v2_35_bcresnet-8 runs/v2_35_native-L runs/v2_35_native-M

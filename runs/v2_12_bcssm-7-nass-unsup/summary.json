@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_bcssm-7-nass-unsup",
+  "params": 349241,
+  "best_by_valid": {
+    "valid": 98.177727784027,
+    "test": 98.79345603271983,
+    "epoch": 185,
+    "which": "ema"
+  },
+  "last_test_raw": 98.85480572597137,
+  "last_test_ema": 98.81390593047034
+}

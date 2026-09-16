@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_bcssm-7-nass-causal",
+  "params": 300633,
+  "best_by_valid": {
+    "valid": 98.22272215973004,
+    "test": 98.48670756646217,
+    "epoch": 170,
+    "which": "ema"
+  },
+  "last_test_raw": 98.40490797546012,
+  "last_test_ema": 98.48670756646217
+}

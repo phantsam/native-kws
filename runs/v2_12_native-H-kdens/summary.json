@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_native-H-kdens",
+  "params": 295572,
+  "best_by_valid": {
+    "valid": 98.60517435320585,
+    "test": 98.95705521472392,
+    "epoch": 140,
+    "which": "ema"
+  },
+  "last_test_raw": 98.87525562372188,
+  "last_test_ema": 98.85480572597137
+}

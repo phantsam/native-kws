@@ -1,0 +1,12 @@
+{
+  "name": "v1_12_native-H-nass-kdens-s2",
+  "params": 301173,
+  "best_by_valid": {
+    "valid": 97.73682508891044,
+    "test": 98.18240830899059,
+    "epoch": 165,
+    "which": "ema"
+  },
+  "last_test_raw": 98.14995131450827,
+  "last_test_ema": 98.18240830899059
+}

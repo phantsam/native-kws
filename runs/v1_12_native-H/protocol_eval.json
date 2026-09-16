@@ -1,0 +1,12 @@
+{
+  "ckpt": "best.pt",
+  "best.pt": {
+    "official": 97.96,
+    "list": 97.79
+  },
+  "last.pt": {
+    "official": 97.92,
+    "list": 97.73
+  },
+  "list_test_size": 3081
+}

@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_bcssm-7",
+  "params": 342200,
+  "best_by_valid": {
+    "valid": 98.22272215973004,
+    "test": 98.65030674846626,
+    "epoch": 180,
+    "which": "ema"
+  },
+  "last_test_raw": 98.81390593047034,
+  "last_test_ema": 98.85480572597137
+}

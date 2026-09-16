@@ -1,0 +1,86 @@
+2026-09-15 01:29:44 finished: v2_12_native-H
+v2_12_native-H {"clean": 98.59, "20dB": 97.77, "10dB": 95.44, "5dB": 91.86, "0dB": 81.27, "-5dB": 49.75}
+2026-09-15 01:50:15 finished: v2_12_native-H-kd
+v2_12_native-H-kd {"clean": 98.85, "20dB": 98.14, "10dB": 95.66, "5dB": 91.88, "0dB": 77.46, "-5dB": 37.57}
+2026-09-15 04:09:16 finished: v2_12_bcssm-7-nass-causal
+v2_12_bcssm-7-nass-causal {"clean": 98.49, "20dB": 97.61, "10dB": 95.28, "5dB": 89.45, "0dB": 72.47, "-5dB": 37.42}
+2026-09-15 05:09:49 finished: v2_12_bcssm-7
+v2_12_bcssm-7 {"clean": 98.65, "20dB": 97.91, "10dB": 95.42, "5dB": 90.78, "0dB": 74.97, "-5dB": 40.29}
+2026-09-15 05:26:14 finished: v2_12_bcssm-7-nass
+v2_12_bcssm-7-nass {"clean": 98.69, "20dB": 98.04, "10dB": 95.83, "5dB": 91.51, "0dB": 76.4, "-5dB": 43.91}
+2026-09-15 05:26:38 finished: v2_12_bcssm-7-nass-unsup
+v2_12_bcssm-7-nass-unsup {"clean": 98.79, "20dB": 98.08, "10dB": 95.54, "5dB": 90.06, "0dB": 72.86, "-5dB": 39.0}
+2026-09-15 05:27:02 all done
+2026-09-15 05:57:12 finished: v2_35_bcresnet-8-s1
+v2_35_bcresnet-8-s1 {"clean": 97.86, "20dB": 97.05, "10dB": 94.94, "5dB": 91.74, "0dB": 83.56, "-5dB": 64.04}
+runs/v2_35_bcresnet-8-s1: 35-class task has a single protocol (testing_list); see summary.json
+2026-09-15 05:57:28 finished: v2_35_bcresnet-8-s2
+v2_35_bcresnet-8-s2 {"clean": 97.89, "20dB": 97.23, "10dB": 95.1, "5dB": 91.97, "0dB": 83.81, "-5dB": 63.75}
+runs/v2_35_bcresnet-8-s2: 35-class task has a single protocol (testing_list); see summary.json
+2026-09-15 06:48:02 finished: v1_12_native-H
+v1_12_native-H {"clean": 97.96, "20dB": 96.98, "10dB": 95.68, "5dB": 93.28, "0dB": 83.09, "-5dB": 51.22}
+v1_12_native-H {"ckpt": "best.pt", "best.pt": {"official": 97.96, "list": 97.79}, "last.pt": {"official": 97.92, "list": 97.73}, "list_test_size": 3081}
+2026-09-15 07:00:23 finished: v2_12_bcssm-7-nass-kdens
+v2_12_bcssm-7-nass-kdens {"clean": 98.85, "20dB": 98.0, "10dB": 96.26, "5dB": 92.58, "0dB": 78.16, "-5dB": 43.46}
+v2_12_bcssm-7-nass-kdens {"ckpt": "best.pt", "best.pt": {"official": 98.85, "list": 98.83}, "last.pt": {"official": 98.83, "list": 98.88}, "list_test_size": 4890}
+2026-09-15 08:31:03 finished: v2_12_native-H-kdens
+v2_12_native-H-kdens {"clean": 98.96, "20dB": 98.16, "10dB": 96.18, "5dB": 91.49, "0dB": 74.44, "-5dB": 34.34}
+v2_12_native-H-kdens {"ckpt": "best.pt", "best.pt": {"official": 98.96, "list": 98.98}, "last.pt": {"official": 98.88, "list": 98.92}, "list_test_size": 4890}
+2026-09-15 17:08:06 finished: v2_12_native-H-nass
+v2_12_native-H-nass {"clean": 98.94, "20dB": 98.22, "10dB": 96.4, "5dB": 93.29, "0dB": 80.35, "-5dB": 43.6}
+v2_12_native-H-nass {"ckpt": "best.pt", "best.pt": {"official": 98.94, "list": 98.96}, "last.pt": {"official": 98.79, "list": 98.85}, "list_test_size": 4890}
+2026-09-15 17:54:50 finished: v2_12_native-H-kdT4
+v2_12_native-H-kdT4 {"clean": 98.96, "20dB": 98.1, "10dB": 96.13, "5dB": 91.72, "0dB": 76.38, "-5dB": 36.36}
+v2_12_native-H-kdT4 {"ckpt": "best.pt", "best.pt": {"official": 98.96, "list": 98.98}, "last.pt": {"official": 98.98, "list": 99.0}, "list_test_size": 4890}
+2026-09-15 18:15:20 finished: v2_12_native-H-nass-kdens
+v2_12_native-H-nass-kdens {"clean": 98.9, "20dB": 97.96, "10dB": 95.77, "5dB": 92.43, "0dB": 78.83, "-5dB": 39.92}
+v2_12_native-H-nass-kdens {"ckpt": "best.pt", "best.pt": {"official": 98.9, "list": 99.02}, "last.pt": {"official": 98.98, "list": 99.04}, "list_test_size": 4890}
+2026-09-15 18:51:52 finished: v2_35_native-H
+v2_35_native-H {"clean": 97.88, "20dB": 97.19, "10dB": 95.17, "5dB": 92.09, "0dB": 83.87, "-5dB": 63.08}
+runs/v2_35_native-H: 35-class task has a single protocol (testing_list); see summary.json
+2026-09-15 18:52:07 all done
+2026-09-15 18:55:15 finished: v2_12_bcresnet-8-s1
+v2_12_bcresnet-8-s1 {"clean": 98.63, "20dB": 97.96, "10dB": 95.4, "5dB": 89.57, "0dB": 71.45, "-5dB": 35.52}
+v2_12_bcresnet-8-s1 {"ckpt": "best.pt", "best.pt": {"official": 98.63, "list": 98.67}, "last.pt": {"official": 98.51, "list": 98.63}, "list_test_size": 4890}
+2026-09-15 18:55:40 finished: v2_12_bcresnet-8-s2
+v2_12_bcresnet-8-s2 {"clean": 98.81, "20dB": 98.02, "10dB": 95.73, "5dB": 90.33, "0dB": 73.84, "-5dB": 37.51}
+v2_12_bcresnet-8-s2 {"ckpt": "best.pt", "best.pt": {"official": 98.81, "list": 98.85}, "last.pt": {"official": 98.67, "list": 98.77}, "list_test_size": 4890}
+2026-09-15 18:56:09 finished: v1_12_bcresnet-8-s1
+v1_12_bcresnet-8-s1 {"clean": 97.99, "20dB": 97.31, "10dB": 95.16, "5dB": 92.18, "0dB": 79.49, "-5dB": 46.9}
+v1_12_bcresnet-8-s1 {"ckpt": "best.pt", "best.pt": {"official": 97.99, "list": 97.76}, "last.pt": {"official": 98.05, "list": 97.83}, "list_test_size": 3081}
+2026-09-15 18:56:34 finished: v1_12_bcresnet-8-s2
+v1_12_bcresnet-8-s2 {"clean": 98.05, "20dB": 97.11, "10dB": 95.46, "5dB": 92.31, "0dB": 77.31, "-5dB": 43.69}
+v1_12_bcresnet-8-s2 {"ckpt": "best.pt", "best.pt": {"official": 98.05, "list": 97.76}, "last.pt": {"official": 98.05, "list": 97.79}, "list_test_size": 3081}
+2026-09-15 18:57:00 finished: v1_12_bcresnet-8
+v1_12_bcresnet-8 {"clean": 98.02, "20dB": 97.31, "10dB": 95.55, "5dB": 92.37, "0dB": 78.19, "-5dB": 45.44}
+v1_12_bcresnet-8 {"ckpt": "best.pt", "best.pt": {"official": 98.02, "list": 97.79}, "last.pt": {"official": 97.99, "list": 97.7}, "list_test_size": 3081}
+2026-09-15 21:34:32 finished: v1_12_native-M
+v1_12_native-M {"clean": 97.63, "20dB": 96.85, "10dB": 94.71, "5dB": 88.51, "0dB": 64.62, "-5dB": 32.68}
+v1_12_native-M {"ckpt": "best.pt", "best.pt": {"official": 97.63, "list": 97.4}, "last.pt": {"official": 97.73, "list": 97.57}, "list_test_size": 3081}
+2026-09-15 23:15:33 finished: v1_12_native-L
+v1_12_native-L {"clean": 98.09, "20dB": 97.47, "10dB": 95.39, "5dB": 92.15, "0dB": 74.88, "-5dB": 39.01}
+v1_12_native-L {"ckpt": "best.pt", "best.pt": {"official": 98.09, "list": 97.89}, "last.pt": {"official": 97.99, "list": 97.73}, "list_test_size": 3081}
+2026-09-15 23:30:17 finished: v2_12_native-H-nass-kdens-s2
+v2_12_native-H-nass-kdens-s2 {"clean": 99.0, "20dB": 98.08, "10dB": 96.01, "5dB": 92.09, "0dB": 75.3, "-5dB": 36.5}
+v2_12_native-H-nass-kdens-s2 {"ckpt": "best.pt", "best.pt": {"official": 99.0, "list": 99.02}, "last.pt": {"official": 99.08, "list": 99.14}, "list_test_size": 4890}
+2026-09-16 00:17:11 finished: v2_12_native-H-nass-kdens-s1
+v2_12_native-H-nass-kdens-s1 {"clean": 99.0, "20dB": 98.1, "10dB": 96.18, "5dB": 92.43, "0dB": 77.08, "-5dB": 37.3}
+v2_12_native-H-nass-kdens-s1 {"ckpt": "best.pt", "best.pt": {"official": 99.0, "list": 99.02}, "last.pt": {"official": 99.0, "list": 98.98}, "list_test_size": 4890}
+2026-09-16 01:34:11 finished: v1_12_native-H-nass-kdens-s1
+v1_12_native-H-nass-kdens-s1 {"clean": 98.12, "20dB": 97.01, "10dB": 95.72, "5dB": 92.96, "0dB": 77.28, "-5dB": 38.53}
+v1_12_native-H-nass-kdens-s1 {"ckpt": "best.pt", "best.pt": {"official": 98.12, "list": 97.79}, "last.pt": {"official": 98.15, "list": 97.96}, "list_test_size": 3081}
+2026-09-16 02:14:43 finished: v2_35_native-M
+v2_35_native-M {"clean": 97.68, "20dB": 97.04, "10dB": 94.89, "5dB": 91.09, "0dB": 80.77, "-5dB": 56.61}
+runs/v2_35_native-M: 35-class task has a single protocol (testing_list); see summary.json
+2026-09-16 02:53:07 finished: v1_12_native-H-nass-kdens
+v1_12_native-H-nass-kdens {"clean": 98.02, "20dB": 97.08, "10dB": 95.98, "5dB": 93.44, "0dB": 81.79, "-5dB": 44.24}
+v1_12_native-H-nass-kdens {"ckpt": "best.pt", "best.pt": {"official": 98.02, "list": 97.86}, "last.pt": {"official": 98.09, "list": 97.92}, "list_test_size": 3081}
+2026-09-16 02:53:23 finished: v1_12_native-H-nass-kdens-s2
+v1_12_native-H-nass-kdens-s2 {"clean": 98.18, "20dB": 97.6, "10dB": 95.68, "5dB": 92.73, "0dB": 78.32, "-5dB": 39.82}
+v1_12_native-H-nass-kdens-s2 {"ckpt": "best.pt", "best.pt": {"official": 98.18, "list": 97.99}, "last.pt": {"official": 98.15, "list": 97.96}, "list_test_size": 3081}
+2026-09-16 07:11:57 finished: v2_35_native-L
+v2_35_native-L {"clean": 97.9, "20dB": 97.26, "10dB": 95.34, "5dB": 91.89, "0dB": 83.95, "-5dB": 63.3}
+runs/v2_35_native-L: 35-class task has a single protocol (testing_list); see summary.json
+2026-09-16 10:44:59 finished: v2_35_native-H-nass-kdens-s1
+v2_35_native-H-nass-kdens-s1 {"clean": 98.08, "20dB": 97.52, "10dB": 95.38, "5dB": 92.29, "0dB": 84.77, "-5dB": 66.37}
+runs/v2_35_native-H-nass-kdens-s1: 35-class task has a single protocol (testing_list); see summary.json

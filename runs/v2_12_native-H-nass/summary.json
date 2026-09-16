@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_native-H-nass",
+  "params": 301173,
+  "best_by_valid": {
+    "valid": 98.26771653543307,
+    "test": 98.93660531697341,
+    "epoch": 145,
+    "which": "ema"
+  },
+  "last_test_raw": 98.79345603271983,
+  "last_test_ema": 98.85480572597137
+}

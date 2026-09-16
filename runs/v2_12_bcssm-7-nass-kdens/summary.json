@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_bcssm-7-nass-kdens",
+  "params": 349241,
+  "best_by_valid": {
+    "valid": 98.2902137232846,
+    "test": 98.85480572597137,
+    "epoch": 175,
+    "which": "ema"
+  },
+  "last_test_raw": 98.83435582822086,
+  "last_test_ema": 98.83435582822086
+}

@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_native-M",
+  "params": 277644,
+  "best_by_valid": {
+    "valid": 98.22272215973004,
+    "test": 98.46625766871166,
+    "epoch": 185,
+    "which": "raw"
+  },
+  "last_test_raw": 98.42535787321063,
+  "last_test_ema": 98.44580777096114
+}

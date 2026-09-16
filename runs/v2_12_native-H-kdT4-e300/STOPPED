@@ -1,0 +1,1 @@
+Killed at epoch 112/300 on 2026-09-15 09:01 when the Claude Code session scope ended. Not restarted: at epoch 110 its validation accuracy (98.29) showed no gain over the 200-epoch schedule; compute reprioritised. Partial log in aborted-20260915-0901/.

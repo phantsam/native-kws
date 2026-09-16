@@ -1,0 +1,12 @@
+{
+  "name": "v2_35_native-M",
+  "params": 279875,
+  "best_by_valid": {
+    "valid": 97.7557358982066,
+    "test": 97.68287142208088,
+    "epoch": 110,
+    "which": "ema"
+  },
+  "last_test_raw": 97.71013175829168,
+  "last_test_ema": 97.69195820081781
+}

@@ -1,0 +1,12 @@
+{
+  "name": "v1_12_bcresnet-8",
+  "params": 321068,
+  "best_by_valid": {
+    "valid": 97.47817652764307,
+    "test": 98.02012333657903,
+    "epoch": 170,
+    "which": "ema"
+  },
+  "last_test_raw": 97.98766634209672,
+  "last_test_ema": 97.98766634209672
+}
