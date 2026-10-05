@@ -15,14 +15,15 @@ Also explored (see `docs/`): BC-SSM (selective SSM inside the BC-ResNet broadcas
 |---|---|---|---|
 | V2-12 | **99.02 ± 0.05** | 98.66 ± 0.14 | 98.91 |
 | V1-12 | 98.13 ± 0.04 | 98.03 ± 0.04 | 98.05 |
-| V2-35 | 98.01 (1 of 3 seeds so far) | 97.90 ± 0.05 | 97.89 |
+| V2-35 | **98.07 ± 0.09** | 97.90 ± 0.05 | 97.89 |
 
-Caveats (details in `docs/EXPERIMENTS.md`, E6, E19, E21): distillation is not used by the published baselines; on V1-12 the result depends on the test-set protocol (97.95 on the testing_list protocol used by Keyword Mamba); the noise-robustness gains are not consistent at −5 dB SNR.
+V2-12 and V2-35 beat the best published from-scratch result (Keyword Mamba) by more than one standard deviation, with 17x fewer parameters. Caveats (details in `docs/EXPERIMENTS.md`, E6, E19, E21): distillation is not used by the published baselines; on V1-12 the result depends on the test-set protocol (97.95 on the testing_list protocol used by Keyword Mamba); the noise-robustness gains are not consistent at −5 dB SNR.
 
 ## Documentation
 * [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): all models, equations, design rationale, novelty assessment
 * [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md): chronological experiment log (hypothesis, command, result, decision)
 * [`docs/RESULTS.md`](docs/RESULTS.md): auto-generated results tables (`python scripts/collect_results.py`)
+* [`docs/LITERATURE.md`](docs/LITERATURE.md): literature notes behind the design decisions, with provenance tags and an explicit scope caveat (not a systematic review)
 
 ## Setup
 ```bash

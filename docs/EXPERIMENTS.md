@@ -343,6 +343,24 @@ Final model: NativeKWS-H + NASS (301 K), KD from T3 of the same benchmark. Test 
 
 **Noise robustness (mean over seeds, matched-noise test, E19 caveat):** V2-12 0 dB 77.1 vs BC-ResNet-8 73.3 (+3.8), −5 dB 37.9 vs 38.5 (−0.6); V1-12 0 dB 79.1 vs 78.3, −5 dB 40.9 vs 45.3 (−4.4); V2-35 (n = 1) 0 dB 84.8 vs 83.7, −5 dB 66.4 vs 63.9. **Robustness gains are not consistent** at the lowest SNR: KD's clean-speech bias (E17) offsets NASS.
 
+## 2026-09-29
+
+### E22: V2-35 complete (3 seeds): second clean pass
+| Benchmark | Rule | Ours (301 K) | BC-ResNet-8, our pipeline | KWM-T-192 (5.2 M, paper) | Verdict vs the pre-registered rule |
+|---|---|---|---|---|---|
+| V2-35 | final epoch | **98.07 ± 0.09** (98.03 / 98.01 / 98.18) | 97.90 ± 0.05 | 97.89 | **passes** (+0.18 > 1 std) |
+| V2-35 | best-valid ckpt | **98.07 ± 0.02** | 97.86 ± 0.03 | – | passes |
+
+Summary over the three benchmarks: **V2-12 and V2-35 are clean passes** on the papers' reporting rule; **V1-12 remains ambiguous** (protocol-dependent, E21). Noise robustness (V2-35, mean of 3 seeds): 0 dB **85.10** vs BC-ResNet-8 83.69; −5 dB **66.26** vs 63.90 — on this benchmark the gain holds at both low SNRs, unlike V2-12 and V1-12 (E21).
+
+### E23: Literature notes written up (`docs/LITERATURE.md`)
+Everything consulted during the project, with provenance tags ([V] source opened, [S] search summary, [M] background knowledge — unverified) and a scope caveat: this is **not** a systematic review. Key consequences recorded there:
+* **Ensemble KD into a tiny KWS student is prior art** (curriculum learning + weighted ensemble distillation for noise-robust SF-KWS, IEEE Access 2023) — our distillation setup is not novel and must cite it.
+* **Learned frame skipping is prior art** (Skip RNN, ICLR 2018, also used for KWS) — a skipping contribution must rest on the SNR supervision, the exactness of skipping in a selective SSM, and measured device energy.
+* **Mamba on MCUs already exists** (MambaLite-Micro 2025; FEMBA on GAP9 2026; BabyMamba-HAR 2026) — "first Mamba on a microcontroller" is unavailable; notably all of them keep the recurrent path in float because it resists quantization, without analysing why.
+* Richest related-work entry point: the June 2025 SF-KWS survey (~250 papers).
+* Six gaps that look open, including a contractivity-based error bound for integer selective scans, decay-aware checkpointing for intermittent power, streaming execution planning in MCU toolchains, and unseen-noise evaluation hygiene.
+
 ---
 
 ## Planned next

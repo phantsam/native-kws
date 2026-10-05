@@ -84,3 +84,10 @@ runs/v2_35_native-L: 35-class task has a single protocol (testing_list); see sum
 2026-09-16 10:44:59 finished: v2_35_native-H-nass-kdens-s1
 v2_35_native-H-nass-kdens-s1 {"clean": 98.08, "20dB": 97.52, "10dB": 95.38, "5dB": 92.29, "0dB": 84.77, "-5dB": 66.37}
 runs/v2_35_native-H-nass-kdens-s1: 35-class task has a single protocol (testing_list); see summary.json
+2026-09-16 16:46:01 finished: v2_35_native-H-nass-kdens
+v2_35_native-H-nass-kdens {"clean": 98.06, "20dB": 97.32, "10dB": 95.46, "5dB": 92.39, "0dB": 85.21, "-5dB": 66.21}
+runs/v2_35_native-H-nass-kdens: 35-class task has a single protocol (testing_list); see summary.json
+2026-09-16 16:46:16 finished: v2_35_native-H-nass-kdens-s2
+v2_35_native-H-nass-kdens-s2 {"clean": 98.08, "20dB": 97.49, "10dB": 95.57, "5dB": 92.43, "0dB": 85.33, "-5dB": 66.19}
+runs/v2_35_native-H-nass-kdens-s2: 35-class task has a single protocol (testing_list); see summary.json
+2026-09-16 16:46:31 all done
