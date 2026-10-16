@@ -30,9 +30,17 @@ V2-12 and V2-35 beat the best published from-scratch result (Keyword Mamba) by m
 
 `rig/` records the official test clips back through an INMP441 on an ESP32, so the
 accuracy cost of the deployment microphone can be measured *paired*, clip by clip,
-against the cached originals. Tooling is built and verified in simulation
-(alignment median +1 sample under 230 ppm clock drift); **no audio recorded yet**.
-See [`docs/DATASET.md`](docs/DATASET.md) and [`rig/README.md`](rig/README.md).
+against the cached originals. It also records live speakers (`record_live.py`) and
+runs the model on the live microphone stream (`listen.py`).
+
+```bash
+python -m rig.listen runs/v2_12_native-H-nass-kdens --port /dev/ttyUSB0   # speak at it
+```
+
+Verified in simulation and against a virtual serial port (alignment median +1 sample
+under 230 ppm drift; bit-exact decoding; all six streamed keywords detected in
+order); **no audio recorded from hardware yet**. See
+[`docs/DATASET.md`](docs/DATASET.md) and [`rig/README.md`](rig/README.md).
 
 ## Setup
 ```bash

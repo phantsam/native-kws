@@ -370,6 +370,23 @@ Everything consulted during the project, with provenance tags ([V] source opened
 * **Hardware correction.** The board is a plain **ESP32**, not an ESP32-S3. For recording this is immaterial (same I2S peripheral; the stream moves to the USB-UART bridge at 2 Mbaud, ~3× headroom over the 64 kB/s needed). For *deployment* it matters: Espressif's ESP-NN benchmark runs the same int8 Person Detection model in **380 ms on ESP32 vs 54 ms on ESP32-S3** at the same 240 MHz, because the S3's LX7 has vector instructions with hand-written assembly kernels while the ESP32 "gets generic optimisations". Our 63 MMAC/s real-time budget was already 20–60 % of one S3 core, so the original ESP32 cannot run this model live. All chip budgets in `ARCHITECTURE.md` assume the S3 and remain written for the S3.
 * **Decision:** proceed with data collection on the ESP32 (it is a sufficient recorder); an ESP32-S3 is required before the deployment phase. **Nothing recorded yet** — no results from this set exist.
 
+### E25: Live microphone path — record real voices, and listen in real time (2026-10-16)
+* **Why:** the replay rig (E24) measures the acoustic channel rigorously but never hears a live person, and nothing in the project had yet run the model on a microphone at all.
+* **Built.** `rig/stream.py` (shared framed-block reader), `rig/record_live.py` (prompted set-B recording: fixed-seed random word order, 5 s room-noise reference, energy-centred 1 s trim, on-the-spot rejection of silent/clipped/dropped takes), `rig/make_set.py` (sessions → cache file, one gain per session so within-session level differences survive), `rig/listen.py` (live keyword spotting on the host: posterior smoothing + release-threshold hysteresis). `capture.py` refactored onto `stream.py`.
+* **Verified against a virtual serial port** driven by an emulated firmware:
+  * clean stream decoded **bit-exactly** (0 error over 51,200 samples);
+  * three injected block drops detected, zero-filled in the right positions, and block 160 **still bit-exact** — a dropout cannot silently shift labels;
+  * injected bus garbage resynchronised without losing the stream;
+  * `capture.py` wrote a bit-exact WAV with a correct sidecar;
+  * `listen.py` fed six real keyword clips detected **all six, in order, no duplicates** (yes 0.97, no 0.71, left 0.77, stop 0.85, go 0.99, up 0.80);
+  * set-B trimmer centres the word to **median 10 ms** (p90 60 ms), >98 % of word energy retained, for words placed randomly in a 2 s window.
+* **Three bugs found by these tests.**
+  1. **Frame misalignment (was also in the committed E24 code).** `resync()` consumed a block's 8-byte header and then the main loop read a whole frame, leaving the reader permanently offset by 8 bytes. `resync()` now returns a complete block so the reader always ends on a frame boundary.
+  2. **Detection fired twice per word.** A keyword stays in the 1 s sliding window after it ends, so a fixed refractory timer has to guess how long. Replaced with hysteresis: re-arm only when the fired class falls below `--release` (0.4).
+  3. **8× slower than real time on CPU** — torch defaulted to all cores on this many-core host and thrashed. `--threads` (default 4) gives 32 ms per window; `listen.py` now also warns if it cannot keep up.
+* **Expectations recorded in `docs/DATASET.md`:** only the ten keywords exist (anything else is correctly `_unknown_`), and GSC is predominantly American-accented English, so an accent gap is expected — and is one of the few effects a small live set can honestly demonstrate, being large where a half-point benchmark difference is not. Privacy rules for set B added (consent, anonymous ids, audio stays out of the repo).
+* **Still unverified:** everything that needs the physical board — I2S bit alignment and slot selection, real UART throughput, and whether a small loudspeaker reproduces the sweep well enough to anchor each segment.
+
 ---
 
 ## Planned next

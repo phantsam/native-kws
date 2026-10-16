@@ -32,25 +32,45 @@ ignored. The port is typically `/dev/ttyUSB0` on ESP32 and `/dev/ttyACM0` on S3.
 
 ## Scripts
 
-| | |
-|---|---|
-| `capture.py` | serial stream -> 32-bit WAV + sidecar JSON (level, DC, dropped blocks) |
-| `build_stimulus.py` | official test clips -> playback WAV + manifest, with resync sweeps |
-| `align.py` | recording + manifest -> labelled 1 s clips with measured per-clip SNR |
-| `eval_real.py` | paired cached-vs-recorded accuracy for trained runs |
+| | runs on | |
+|---|---|---|
+| `stream.py` | laptop | framed block reader: resync, sequence checking, zero-filled drops |
+| `listen.py` | laptop | live keyword spotting -- speak and watch the model fire |
+| `capture.py` | laptop | serial stream -> 32-bit WAV + sidecar JSON (level, DC, drops) |
+| `record_live.py` | laptop | prompted recording of real speakers (set B) |
+| `build_stimulus.py` | server | official test clips -> playback WAV + manifest, with resync sweeps |
+| `align.py` | server | recording + manifest -> labelled 1 s clips with per-clip SNR |
+| `make_set.py` | server | live sessions -> cache file |
+| `eval_real.py` | server | paired cached-vs-recorded accuracy for trained runs |
 
-`capture.py` needs `pyserial` (`.venv/bin/pip install pyserial`); the others use the
-packages already in the environment.
+**The board is plugged into your laptop, not the GPU server**, so the work splits:
+record locally, copy the WAVs over, align and evaluate on the server.
+`stream.py`, `capture.py` and `record_live.py` need only `pyserial`, `numpy` and
+`soundfile`. `listen.py` also needs `torch` and a checkpoint, but runs fine on CPU
+(~32 ms per window with `--threads 4`; more threads is *slower*, not faster).
 
 ## First run
 
+Start here -- it finds wiring mistakes in about ten seconds:
+
 ```bash
-.venv/bin/pip install pyserial
-python rig/build_stimulus.py --out rig/stimulus --task v2_12 --limit 200   # 5 min dry run
+pip install pyserial
+python -m rig.listen runs/v2_12_native-H-nass-kdens --port /dev/ttyUSB0
+```
+
+Say `yes`, `no`, `stop`, `go`. The meter should sit between about -30 and -6 dBFS
+while you speak. Nothing moving at all means the wiring or the slot is wrong (check
+SD on GPIO 33 and L/R grounded); a meter pinned at 0 dBFS means it is clipping.
+
+Then the replay dry run:
+
+```bash
+python rig/build_stimulus.py --out rig/stimulus --task v2_12 --limit 200   # 5 min
 python rig/capture.py rig/out/test__stimulus_00.wav --seconds 320 --note "dry run"
 python rig/align.py rig/out/test__stimulus_00.wav --out cache/real_test.pt
 ```
 
 Check, in order: the sidecar JSON's peak level is between -30 and -3 dBFS and
 `dropped_blocks` is 0; `align.py` reports a clock drift under ~1000 ppm and a
-residual under ~50 ms. Then record the full conditions from `docs/DATASET.md`.
+residual under ~50 ms. Then record the full conditions from
+[`../docs/DATASET.md`](../docs/DATASET.md).
