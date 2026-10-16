@@ -24,6 +24,15 @@ V2-12 and V2-35 beat the best published from-scratch result (Keyword Mamba) by m
 * [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md): chronological experiment log (hypothesis, command, result, decision)
 * [`docs/RESULTS.md`](docs/RESULTS.md): auto-generated results tables (`python scripts/collect_results.py`)
 * [`docs/LITERATURE.md`](docs/LITERATURE.md): literature notes behind the design decisions, with provenance tags and an explicit scope caveat (not a systematic review)
+* [`docs/DATASET.md`](docs/DATASET.md): protocol for the real-microphone (INMP441) test set — replay design, condition grid, pre-registered validity rules
+
+## Real-microphone test set
+
+`rig/` records the official test clips back through an INMP441 on an ESP32, so the
+accuracy cost of the deployment microphone can be measured *paired*, clip by clip,
+against the cached originals. Tooling is built and verified in simulation
+(alignment median +1 sample under 230 ppm clock drift); **no audio recorded yet**.
+See [`docs/DATASET.md`](docs/DATASET.md) and [`rig/README.md`](rig/README.md).
 
 ## Setup
 ```bash

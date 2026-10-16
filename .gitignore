@@ -10,3 +10,7 @@ cache/
 # model checkpoints and training state (large; kept locally)
 *.pt
 *.pt.tmp
+
+# recording rig outputs (large audio)
+rig/out/
+rig/stimulus/
