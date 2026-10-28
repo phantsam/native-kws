@@ -1,0 +1,159 @@
+
+    ___________ ____        ____  ____  ____
+   / ____/ ___// __ \      / __ \/ __ \/ __ \
+  / __/  \__ \/ /_/ /_____/ /_/ / /_/ / / / /
+ / /___ ___/ / ____/_____/ ____/ ____/ /_/ /
+/_____//____/_/         /_/   /_/    \___\_\
+
+
+source: deploy\onchip\bcresnet-3\bcresnet-3.onnx
+calibration tensors: (128, 1, 40, 101), range [-13.816, 9.028]
+[19:28:18] RNN Arity Normalization Pass Running ...        Finished.
+[19:28:18] ESPDL Attention Fusion Pass Running ...         Finished.
+[19:28:18] ESPDL Attention Legalize Pass Running ...       Finished.
+[19:28:18] ESPDL RotaryEmbedding Fusion Pass Running ...   Finished.
+[19:28:18] ESPDL RotaryEmbedding Legalize Pass Running ... Finished.
+[19:28:18] ESPDL InverseSigmoid Fusion Pass Running ...    Finished.
+[19:28:18] ConvTranspose Decomposition Pass Running ...    Finished.
+[19:28:18] PPQ Quantization Fusion Pass Running ...       Finished.
+[19:28:18] PPQ Quantize Simplify Pass Running ...         Finished.
+[19:28:18] PPQ Parameter Quantization Pass Running ...    Finished.
+Calibration Progress(Phase 1): 100%|██████████| 128/128 [00:03<00:00, 37.88it/s]
+Calibration Progress(Phase 2): 100%|██████████| 128/128 [00:04<00:00, 31.11it/s]
+Finished.
+[19:28:27] PPQ Quantization Alignment Pass Running ...    Finished.
+[19:28:27] PPQ Passive Parameter Quantization Running ... Finished.
+--------- Network Snapshot ---------
+Num of Op:                    [144]
+Num of Quantized Op:          [144]
+Num of Variable:              [256]
+Num of Quantized Var:         [256]
+------- Quantization Snapshot ------
+Num of Quant Config:          [419]
+ACTIVATED:                    [138]
+OVERLAPPED:                   [166]
+PASSIVE:                      [91]
+FP32:                         [24]
+Network Quantization Finished.
+Analysing Graphwise Quantization Error(Phrase 1):: 100%|██████████| 8/8 [00:00<00:00, 12.02it/s]
+Analysing Graphwise Quantization Error(Phrase 2):: 100%|██████████| 8/8 [00:00<00:00,  8.69it/s]
+Layer                              | NOISE:SIGNAL POWER RATIO 
+bnfold_conv_6:                     | ████████████████████ | 34.475%
+bnfold_conv_7:                     | ███████████████████  | 33.079%
+bnfold_conv_11:                    | ██████████████████   | 31.465%
+bnfold_conv_10:                    | ██████████████████   | 30.988%
+/body/body.7/f1/f1.0/f1.0.0/Conv:  | ██████████████████   | 30.897%
+/body/body.7/f1/f1.1/Conv:         | ██████████████████   | 30.463%
+bnfold_conv_5:                     | █████████████████    | 30.039%
+/body/body.11/f2/f2.0/f2.0.0/Conv: | █████████████████    | 29.926%
+/body/body.5/f1/f1.1/Conv:         | █████████████████    | 28.659%
+bnfold_conv_9:                     | ████████████████     | 28.304%
+/body/body.5/f1/f1.0/f1.0.0/Conv:  | ████████████████     | 27.910%
+bnfold_conv_8:                     | ███████████████      | 25.372%
+/body/body.6/f1/f1.0/f1.0.0/Conv:  | ███████████████      | 25.134%
+/body/body.11/f1/f1.0/f1.0.0/Conv: | ██████████████       | 24.342%
+/body/body.10/f2/f2.0/f2.0.0/Conv: | ██████████████       | 23.841%
+/body/body.9/f1/f1.0/f1.0.0/Conv:  | █████████████        | 22.209%
+/body/body.10/f1/f1.0/f1.0.0/Conv: | █████████████        | 21.729%
+/body/body.8/f2/f2.0/f2.0.0/Conv:  | ████████████         | 20.577%
+/body/body.9/f2/f2.0/f2.0.0/Conv:  | ████████████         | 20.543%
+/body/body.6/f1/f1.1/Conv:         | ████████████         | 20.408%
+/body/body.8/f2/f2.1/f2.1.0/Conv:  | ███████████          | 18.557%
+/body/body.8/f1/f1.0/f1.0.0/Conv:  | ███████████          | 18.167%
+/head/head.0/Conv:                 | ██████████           | 17.203%
+/body/body.6/f2/f2.0/f2.0.0/Conv:  | ██████████           | 16.665%
+/body/body.7/f2/f2.0/f2.0.0/Conv:  | ██████████           | 16.513%
+/body/body.1/f1/f1.1/Conv:         | █████████            | 15.384%
+/head/head.1/Conv:                 | ████████             | 13.156%
+/body/body.8/f1/f1.1/Conv:         | ███████              | 12.294%
+/body/body.4/f1/f1.1/Conv:         | ███████              | 12.113%
+/body/body.10/f1/f1.1/Conv:        | ███████              | 11.734%
+bnfold_conv_1:                     | ███████              | 11.408%
+/body/body.5/f2/f2.0/f2.0.0/Conv:  | ███████              | 11.364%
+/body/body.11/f1/f1.1/Conv:        | ███████              | 11.337%
+bnfold_conv_4:                     | ██████               | 10.790%
+/body/body.9/f1/f1.1/Conv:         | ██████               | 10.634%
+/body/body.3/f1/f1.1/Conv:         | ██████               | 10.207%
+/body/body.0/f1/f1.1/Conv:         | ██████               | 9.612%
+/body/body.4/f1/f1.0/f1.0.0/Conv:  | █████                | 8.290%
+/body/body.1/f1/f1.0/f1.0.0/Conv:  | █████                | 8.246%
+/body/body.2/f1/f1.1/Conv:         | ████                 | 6.305%
+/body/body.3/f1/f1.0/f1.0.0/Conv:  | ███                  | 5.793%
+bnfold_conv_3:                     | ███                  | 5.427%
+bnfold_conv_2:                     | ██                   | 3.927%
+/head/head.5/Conv:                 | ██                   | 3.489%
+/body/body.3/f2/f2.0/f2.0.0/Conv:  | ██                   | 3.289%
+/body/body.2/f1/f1.0/f1.0.0/Conv:  | ██                   | 2.990%
+/body/body.2/f2/f2.0/f2.0.0/Conv:  | ██                   | 2.986%
+/body/body.0/f1/f1.0/f1.0.0/Conv:  | ██                   | 2.766%
+/body/body.4/f2/f2.0/f2.0.0/Conv:  | ██                   | 2.665%
+/body/body.4/f2/f2.1/f2.1.0/Conv:  | █                    | 1.981%
+/body/body.2/f2/f2.1/f2.1.0/Conv:  | █                    | 1.542%
+/body/body.1/f2/f2.0/f2.0.0/Conv:  | █                    | 1.057%
+bnfold_conv_0:                     |                      | 0.742%
+/body/body.0/f2/f2.1/f2.1.0/Conv:  |                      | 0.223%
+/body/body.0/f2/f2.0/f2.0.0/Conv:  |                      | 0.130%
+/stem/stem.0/Conv:                 |                      | 0.049%
+Analysing Layerwise quantization error:: 100%|██████████| 56/56 [00:12<00:00,  4.39it/s]
+Layer                              | NOISE:SIGNAL POWER RATIO 
+bnfold_conv_4:                     | ████████████████████ | 2.566%
+bnfold_conv_8:                     | █████                | 0.619%
+bnfold_conv_10:                    | ███                  | 0.447%
+bnfold_conv_1:                     | ███                  | 0.447%
+bnfold_conv_11:                    | ███                  | 0.365%
+bnfold_conv_7:                     | █                    | 0.144%
+bnfold_conv_2:                     | █                    | 0.086%
+bnfold_conv_5:                     | █                    | 0.083%
+/body/body.10/f2/f2.0/f2.0.0/Conv: | █                    | 0.076%
+bnfold_conv_0:                     | █                    | 0.069%
+/body/body.11/f2/f2.0/f2.0.0/Conv: |                      | 0.062%
+bnfold_conv_3:                     |                      | 0.056%
+bnfold_conv_6:                     |                      | 0.054%
+/body/body.5/f2/f2.0/f2.0.0/Conv:  |                      | 0.053%
+bnfold_conv_9:                     |                      | 0.037%
+/stem/stem.0/Conv:                 |                      | 0.036%
+/head/head.5/Conv:                 |                      | 0.016%
+/body/body.4/f2/f2.1/f2.1.0/Conv:  |                      | 0.011%
+/body/body.10/f1/f1.0/f1.0.0/Conv: |                      | 0.010%
+/body/body.7/f2/f2.0/f2.0.0/Conv:  |                      | 0.009%
+/body/body.2/f2/f2.1/f2.1.0/Conv:  |                      | 0.008%
+/body/body.0/f2/f2.0/f2.0.0/Conv:  |                      | 0.007%
+/body/body.3/f2/f2.0/f2.0.0/Conv:  |                      | 0.006%
+/body/body.0/f2/f2.1/f2.1.0/Conv:  |                      | 0.006%
+/body/body.8/f2/f2.1/f2.1.0/Conv:  |                      | 0.006%
+/body/body.8/f2/f2.0/f2.0.0/Conv:  |                      | 0.004%
+/body/body.9/f2/f2.0/f2.0.0/Conv:  |                      | 0.004%
+/body/body.4/f2/f2.0/f2.0.0/Conv:  |                      | 0.004%
+/body/body.4/f1/f1.1/Conv:         |                      | 0.003%
+/body/body.1/f1/f1.1/Conv:         |                      | 0.003%
+/body/body.10/f1/f1.1/Conv:        |                      | 0.003%
+/body/body.1/f2/f2.0/f2.0.0/Conv:  |                      | 0.003%
+/body/body.2/f2/f2.0/f2.0.0/Conv:  |                      | 0.003%
+/body/body.2/f1/f1.1/Conv:         |                      | 0.002%
+/head/head.1/Conv:                 |                      | 0.002%
+/body/body.5/f1/f1.1/Conv:         |                      | 0.002%
+/body/body.0/f1/f1.1/Conv:         |                      | 0.002%
+/body/body.9/f1/f1.1/Conv:         |                      | 0.002%
+/body/body.3/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.6/f2/f2.0/f2.0.0/Conv:  |                      | 0.001%
+/body/body.7/f1/f1.0/f1.0.0/Conv:  |                      | 0.001%
+/body/body.6/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.5/f1/f1.0/f1.0.0/Conv:  |                      | 0.001%
+/body/body.11/f1/f1.1/Conv:        |                      | 0.001%
+/body/body.3/f1/f1.0/f1.0.0/Conv:  |                      | 0.001%
+/body/body.6/f1/f1.0/f1.0.0/Conv:  |                      | 0.001%
+/head/head.0/Conv:                 |                      | 0.001%
+/body/body.8/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.9/f1/f1.0/f1.0.0/Conv:  |                      | 0.001%
+/body/body.8/f1/f1.0/f1.0.0/Conv:  |                      | 0.001%
+/body/body.11/f1/f1.0/f1.0.0/Conv: |                      | 0.001%
+/body/body.7/f1/f1.1/Conv:         |                      | 0.000%
+/body/body.0/f1/f1.0/f1.0.0/Conv:  |                      | 0.000%
+/body/body.1/f1/f1.0/f1.0.0/Conv:  |                      | 0.000%
+/body/body.4/f1/f1.0/f1.0.0/Conv:  |                      | 0.000%
+/body/body.2/f1/f1.0/f1.0.0/Conv:  |                      | 0.000%
+[ERROR][ESPDL][2026-10-28 19:28:41]:  When deploying with esp-dl, the calculation result of the bnfold_conv_1(type: Conv) operator will cause an exception. Please adjust the model to ensure that (output_exponent - input0_exponent - input1_exponent) >= 0.
+tv0: expected 11  float 11  int8(ppq) 11  margin 14.250  max|dq| 3.138
+tv1: expected 5  float 5  int8(ppq) 5  margin 5.750  max|dq| 1.968
+tv2: expected 9  float 9  int8(ppq) 9  margin 13.000  max|dq| 1.930
+tv3: expected 0  float 0  int8(ppq) 0  margin 1.250  max|dq| 4.885

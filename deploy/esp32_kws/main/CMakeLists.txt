@@ -8,8 +8,8 @@ set(cmake_dir ${espdl_dir}/fbs_loader/cmake)
 include(${cmake_dir}/utilities.cmake)
 
 idf_component_register(SRCS app_main.cpp
-                       INCLUDE_DIRS . ../../onchip
+                       INCLUDE_DIRS . ../../onchip/bcresnet-2
                        REQUIRES esp-dl esp_timer)
 
-# Model stays in flash .rodata (symbol _binary_bcresnet8_espdl_start).
-target_add_aligned_binary_data(${COMPONENT_LIB} ${CMAKE_CURRENT_SOURCE_DIR}/models/bcresnet8.espdl BINARY)
+# Model stays in flash .rodata (symbol _binary_model_espdl_start).
+target_add_aligned_binary_data(${COMPONENT_LIB} ${CMAKE_CURRENT_SOURCE_DIR}/models/model.espdl BINARY)

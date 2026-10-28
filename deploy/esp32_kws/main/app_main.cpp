@@ -1,4 +1,4 @@
-// Milestone 1 (docs/ONCHIP.md): run int8 BC-ResNet-8 on the ESP32 over the four
+// Milestone 1 (docs/ONCHIP.md): run an int8 BC-ResNet on the ESP32 over the four
 // baked-in log-mel test vectors and check the argmax against the host.
 #include <cmath>
 #include <cstring>
@@ -9,7 +9,7 @@
 #include "esp_timer.h"
 #include "test_vectors.h"
 
-extern const uint8_t bcresnet8_espdl[] asm("_binary_bcresnet8_espdl_start");
+extern const uint8_t model_espdl[] asm("_binary_model_espdl_start");
 static const char *TAG = "kws";
 
 static void log_heap(const char *when)
@@ -25,7 +25,7 @@ extern "C" void app_main(void)
     log_heap("boot");
 
     // param_copy=false: weights stay in flash; the ESP32 has no room to copy ~321 KB into DRAM.
-    dl::Model *model = new dl::Model((const char *)bcresnet8_espdl, fbs::MODEL_LOCATION_IN_FLASH_RODATA, 0,
+    dl::Model *model = new dl::Model((const char *)model_espdl, fbs::MODEL_LOCATION_IN_FLASH_RODATA, 0,
                                      dl::MEMORY_MANAGER_GREEDY, nullptr, false);
     log_heap("after load");
 

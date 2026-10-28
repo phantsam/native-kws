@@ -1,18 +1,25 @@
-"""Quantize deploy/onchip/bcresnet8.onnx to an int8 .espdl for the plain ESP32 (docs/ONCHIP.md).
+"""Quantize one deploy/onchip/<model>/ export to an int8 .espdl for the plain ESP32 (docs/ONCHIP.md).
 
 Uses esp-ppq PTQ with target "c" (ESP-DL's C kernels, which is what the ESP32 runs),
-calibrated on deploy/onchip/calib_128.npy. The "yes" test vector is embedded as the
-model's test input so `model->test()` on the chip checks bit-exactness against PPQ.
+calibrated on that directory's calib_128.npy. The ONNX, calib_128.npy and
+test_vectors.npz all come from the one --src directory: they must belong together.
+The "yes" test vector is embedded as the model's test input so `model->test()` on
+the chip checks bit-exactness against PPQ.
 
 Afterwards the quantized graph is run on the host for all 4 test vectors and compared
 with the float logits, so a host-side quantization failure is separated from an
 on-chip one.
 
-    python scripts/quantize_onchip.py [--out deploy/esp32_kws/main/models/bcresnet8.espdl]
+    python scripts/quantize_onchip.py --src deploy/onchip/bcresnet-2 --out deploy/esp32_kws/main/models/model.espdl
+
+The output is always called model.espdl so the embedded-binary symbol
+(_binary_model_espdl_start) does not change with the model scale.
 """
 
 import argparse
 import json
+import shutil
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -22,13 +29,14 @@ from esp_ppq.api import espdl_quantize_onnx, get_target_platform
 from esp_ppq.executor import TorchExecutor
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "deploy" / "onchip"
 INPUT_SHAPE = [1, 1, 40, 101]
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=str(ROOT / "deploy" / "esp32_kws" / "main" / "models" / "bcresnet8.espdl"))
+    ap.add_argument("--src", default=str(ROOT / "deploy" / "onchip" / "bcresnet-2"),
+                    help="one export directory: <model>.onnx + calib_128.npy + test_vectors.npz")
+    ap.add_argument("--out", default=str(ROOT / "deploy" / "esp32_kws" / "main" / "models" / "model.espdl"))
     ap.add_argument("--int16-ops", nargs="*", default=[],
                     help="ONNX node names to dispatch to w16a16 (mixed precision); default is all-int8")
     args = ap.parse_args()
@@ -36,20 +44,30 @@ def main():
     setting = QuantizationSettingFactory.espdl_setting()
     for name in args.int16_ops:
         setting.dispatching_table.append(name, get_target_platform("c", quant_type="w16a16"))
+    src = Path(args.src)
+    onnx_files = sorted(src.glob("*.onnx"))
+    if len(onnx_files) != 1:
+        raise SystemExit(f"expected exactly one .onnx in {src}, found {[f.name for f in onnx_files]}")
+    print(f"source: {onnx_files[0]}")
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
 
-    calib = np.load(SRC / "calib_128.npy").astype(np.float32).reshape(-1, *INPUT_SHAPE[1:])
+    calib = np.load(src / "calib_128.npy").astype(np.float32).reshape(-1, *INPUT_SHAPE[1:])
     print(f"calibration tensors: {calib.shape}, range [{calib.min():.3f}, {calib.max():.3f}]")
     calib_list = [torch.from_numpy(c[None]) for c in calib]  # each [1,1,40,101]
 
-    tv = np.load(SRC / "test_vectors.npz")
+    tv = np.load(src / "test_vectors.npz")
     tv_in = tv["feat"].astype(np.float32).reshape(-1, *INPUT_SHAPE[1:])
     tv_logits = tv["logits"]
     tv_labels = tv["label"]
 
+    # esp-ppq re-saves the ONNX it is given, so hand it a copy: deploy/onchip/* must stay untouched.
+    tmp = Path(tempfile.mkdtemp())
+    onnx_copy = tmp / onnx_files[0].name
+    shutil.copyfile(onnx_files[0], onnx_copy)
+
     graph = espdl_quantize_onnx(
-        onnx_import_file=str(SRC / "bcresnet8.onnx"),
+        onnx_import_file=str(onnx_copy),
         espdl_export_file=str(out),
         calib_dataloader=calib_list,
         calib_steps=len(calib_list),
@@ -64,6 +82,8 @@ def main():
         export_test_values=True,
         verbose=1,
     )
+
+    shutil.rmtree(tmp, ignore_errors=True)
 
     executor = TorchExecutor(graph=graph, device="cpu")
     results = []

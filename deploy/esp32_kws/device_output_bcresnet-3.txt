@@ -1,0 +1,62 @@
+_drv:0x00,dH¬ë‹é ## Labeüets Jun  8 2016 00:22:57
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6276
+load:0x40078000,len:15736
+load:0x40080400,len:4
+load:0x40080404,len:3860
+entry 0x4008063c
+I (29) boot: ESP-IDF v5.4.2 2nd stage bootloader
+I (29) boot: compile time Oct 28 2026 19:31:33
+I (29) boot: Multicore bootloader
+I (30) boot: chip revision: v1.0
+I (33) boot.esp32: SPI Speed      : 40MHz
+I (36) boot.esp32: SPI Mode       : DIO
+I (40) boot.esp32: SPI Flash Size : 4MB
+I (44) boot: Enabling RNG early entropy source...
+I (48) boot: Partition Table:
+I (51) boot: ## Label            Usage          Type ST Offset   Length
+I (57) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (70) boot:  2 factory          factory app      00 00 00010000 00177000
+I (77) boot: End of partition table
+I (80) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=56428h (353320) map
+I (208) esp_image: segment 1: paddr=00066450 vaddr=3ff80000 size=0001ch (    28) load
+I (208) esp_image: segment 2: paddr=00066474 vaddr=3ffb0000 size=02288h (  8840) load
+I (215) esp_image: segment 3: paddr=00068704 vaddr=40080000 size=07914h ( 30996) load
+I (232) esp_image: segment 4: paddr=00070020 vaddr=400d0020 size=80050h (524368) map
+I (411) esp_image: segment 5: paddr=000f0078 vaddr=40087914 size=04d40h ( 19776) load
+I (425) boot: Loaded app from partition at offset 0x10000
+I (425) boot: Disabling RNG early entropy source...
+I (435) cpu_start: Multicore app
+I (444) cpu_start: Pro cpu start user code
+I (444) cpu_start: cpu freq: 240000000 Hz
+I (444) app_init: Application information:
+I (444) app_init: Project name:     esp32_kws
+I (448) app_init: App version:      1
+I (451) app_init: Compile time:     Oct 28 2026 19:30:26
+I (456) app_init: ELF file SHA256:  62883cb4c...
+I (461) app_init: ESP-IDF:          v5.4.2
+I (464) efuse_init: Min chip rev:     v0.0
+I (468) efuse_init: Max chip rev:     v3.99 
+I (472) efuse_init: Chip rev:         v1.0
+I (476) heap_init: Initializing. RAM available for dynamic allocation:
+I (483) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+I (488) heap_init: At 3FFB40D0 len 0002BF30 (175 KiB): DRAM
+I (493) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (498) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (504) heap_init: At 4008C654 len 000139AC (78 KiB): IRAM
+I (510) spi_flash: detected chip: generic
+I (513) spi_flash: flash io: dio
+I (516) main_task: Started on CPU0
+I (526) main_task: Calling app_main()
+I (526) kws: [heap boot] internal free 365988 B, largest block 155648 B, min ever free 365988 B
+E (796) esp-dl: Input cap=0x804 can not callocate with MALLOC_CAP_SIMD, please try other caps.
+E (796) dl::ModelContext: Failed to alloc 191.75KB internal RAM, largest available internal RAM block size 108.00KB
+E (806) MemoryManagerGreedy: root_alloc failed
+I (816) kws: [heap after load] internal free 285460 B, largest block 110592 B, min ever free 199368 B
+E (816) kws: model tensors unallocated -- activation arena did not fit in internal RAM; stopping
+I (826) main_task: Returned from app_main()
