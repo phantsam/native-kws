@@ -463,6 +463,23 @@ Follows E29, which was recorded on the `e26-esp32-bringup` branch.
 * **Training started:** causal `bcresnet-1/2/3/8` on v2_12, official SGD recipe, so the accuracy cost of losing look-ahead is measured rather than assumed.
 * **Correction to earlier advice.** E29's and `ONCHIP.md`'s suggestion that an ESP32-S3 is "required for the deployment phase" was wrong as stated. The S3 buys ~7x speed and a PSRAM option; it does not fix per-tensor quantization (ESP32 and S3 are both per-tensor; per-channel Conv exists only on P4/S31), and it is not needed for the streaming contribution, which the base chip demonstrates more convincingly.
 
+### E33: What look-ahead is worth — causal BC-ResNet costs 0.08–0.37 points (2026-10-28)
+* **Why:** streaming execution (E31) cannot use future frames, so every streaming accuracy claim needs a causal model behind it. E31 wired `causal=True` through `BCResNet`/`BCBlock` and verified zero look-ahead; this entry is the measurement.
+* **Setup.** `bcresnet-1/2/3/8` with `--causal`, v2_12, the official BC-ResNet SGD recipe (lr 0.1, wd 1e-3, bs 100, no label smoothing, 200 epochs) — byte-identical to the non-causal runs of E28 apart from the flag, so the pairs are directly comparable. Four runs on one GPU, 78 min wall (`jobs/causal.txt`, queue 16:24 → 17:42).
+
+| model | params | non-causal, best-by-valid | causal, best-by-valid | cost | non-causal, last EMA | causal, last EMA | cost |
+|---|---|---|---|---|---|---|---|
+| BC-ResNet-1 | 9,232 | 96.81 | 96.44 | **−0.37** | 96.99 | 96.56 | −0.43 |
+| BC-ResNet-2 | 27,284 | 98.02 | **97.67** | **−0.35** | 98.02 | 97.67 | −0.35 |
+| BC-ResNet-3 | 54,168 | 98.36 | 98.18 | **−0.18** | 98.40 | 98.12 | −0.29 |
+| BC-ResNet-8 | 321,068 | 98.67 | 98.59 | **−0.08** | 98.83 | 98.63 | −0.20 |
+
+* **Parameter counts are identical in every pair** (9,232 / 27,284 / 54,168 / 321,068), as they must be — only the padding moves from symmetric to left-only. So this is a clean measurement of the information lost, not of a smaller model.
+* **The cost shrinks monotonically with scale: 0.37 → 0.35 → 0.18 → 0.08.** Losing 120 ms of future context hurts small models most; by τ=8 it is within run-to-run noise. Reading it the other way: look-ahead is a substitute for capacity, and the models small enough for an MCU are exactly the ones that were leaning on it. The best-by-valid and last-EMA columns agree on the ordering, so the trend is not a selection artifact.
+* **Consequence for the deployment target.** Causal BC-ResNet-2 is **97.67 %** — the honest number for a streaming deployment, where E28's 98.02 % is the whole-window number. Both are above the published non-causal BC-ResNet-2 (97.4), so the streaming model still beats the paper's offline one by +0.27.
+* **What this does not yet include:** int8. E32 measured 0.96 points of int8 cost for non-causal τ=2 on silicon (98.02 → 97.06). If causal τ=2 quantizes similarly, a streaming ESP32 deployment lands near 96.7 %, but that is an extrapolation across two changes at once. The measurement to make is: export causal τ=2, run esp-ppq's int8 simulation (E32 showed it is bit-exact with the chip on 4,890/4,890 clips, 4 min instead of 92), then confirm on the board.
+* Files: `runs/v2_12_bcresnet-{1,2,3,8}-causal/`, `jobs/causal.txt`. `docs/ONCHIP.md` Milestone 3 now carries the causal accuracy column.
+
 ---
 
 ## Planned next
