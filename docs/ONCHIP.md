@@ -71,19 +71,37 @@ which is 252.5 KB in int8. The ESP-DL arena asked for 391 KB; the chip had ~366 
 free at boot but a largest *contiguous* block of only 108 KB at the point of
 allocation. Weights were never the problem — they stayed in flash as intended.
 
-Largest single activation by scale, int8, for the fixed 101-frame window:
+The arena holds more than one tensor at a time. The τ=8 run measured a **391.38 KB
+arena against a 252.5 KB largest tensor, so arena ≈ 1.55 × largest tensor** under
+`MEMORY_MANAGER_GREEDY`. Applying that ratio against the 108 KB largest free block
+observed after the model loads:
 
-| model | params | largest activation | fits in ~108 KB contiguous? |
-|---|---|---|---|
-| BC-ResNet-1 | 9,232 | 31.6 KB | yes, comfortably |
-| BC-ResNet-2 | 27,284 | 63.1 KB | yes |
-| BC-ResNet-3 | 54,168 | 94.7 KB | yes, tight |
-| BC-ResNet-4 | 89,884 | 126.2 KB | no |
-| BC-ResNet-6 | 187,812 | 189.4 KB | no |
-| BC-ResNet-8 | 321,068 | 252.5 KB | no — this is what failed |
+| model | params | largest activation | arena ≈ 1.55x | fits in 108 KB? |
+|---|---|---|---|---|
+| BC-ResNet-1 | 9,232 | 31.6 KB | ~49 KB | **yes, comfortably** |
+| BC-ResNet-2 | 27,284 | 63.1 KB | ~98 KB | yes, but only 10 KB spare |
+| BC-ResNet-3 | 54,168 | 94.7 KB | ~147 KB | **no** |
+| BC-ResNet-4 | 89,884 | 126.2 KB | ~196 KB | no |
+| BC-ResNet-6 | 187,812 | 189.4 KB | ~294 KB | no |
+| BC-ResNet-8 | 321,068 | 252.5 KB | 391 KB measured | no — this is what failed |
 
-The arena must hold more than one tensor at a time, so treat these as lower bounds
-and prefer a scale with headroom. **Deploy BC-ResNet-2 first, then BC-ResNet-3.**
+**Deploy BC-ResNet-1 first** to get a green run, then try BC-ResNet-2. τ=3 and above
+need either streaming execution or a board with PSRAM. (An earlier version of this
+file said to start at τ=2 and that τ=3 was "tight"; that predated the measured 1.55x
+arena ratio and was wrong.)
+
+**One more thing from the device log**, which the arena failure overshadowed:
+
+```
+E esp-dl: Input cap=0x804 can not callocate with MALLOC_CAP_SIMD, please try other caps.
+```
+
+ESP-DL asked for SIMD-capable memory, which the plain ESP32 has none of — the vector
+unit is an ESP32-S3 feature. On τ=8 this was moot because the arena was too big
+anyway, but it may well reappear at τ=1 with plenty of RAM free. If it does, it is a
+memory-capability configuration problem, not a size problem: check the `dl::Model`
+memory-manager arguments and ESP-DL's cap settings rather than shrinking the model
+further.
 
 Export any of them with:
 
