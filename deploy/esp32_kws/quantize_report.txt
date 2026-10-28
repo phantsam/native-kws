@@ -1,0 +1,247 @@
+
+    ___________ ____        ____  ____  ____
+   / ____/ ___// __ \      / __ \/ __ \/ __ \
+  / __/  \__ \/ /_/ /_____/ /_/ / /_/ / / / /
+ / /___ ___/ / ____/_____/ ____/ ____/ /_/ /
+/_____//____/_/         /_/   /_/    \___\_\
+
+
+calibration tensors: (128, 1, 40, 101), range [-13.816, 9.028]
+[17:52:20] RNN Arity Normalization Pass Running ...        Finished.
+[17:52:20] ESPDL Attention Fusion Pass Running ...         Finished.
+[17:52:20] ESPDL Attention Legalize Pass Running ...       Finished.
+[17:52:21] ESPDL RotaryEmbedding Fusion Pass Running ...   Finished.
+[17:52:21] ESPDL RotaryEmbedding Legalize Pass Running ... Finished.
+[17:52:21] ESPDL InverseSigmoid Fusion Pass Running ...    Finished.
+[17:52:21] ConvTranspose Decomposition Pass Running ...    Finished.
+[17:52:21] PPQ Quantization Fusion Pass Running ...       Finished.
+[17:52:21] PPQ Quantize Simplify Pass Running ...         Finished.
+[17:52:21] PPQ Parameter Quantization Pass Running ...    Finished.
+[17:52:21] PPQ Runtime Calibration Pass Running ...       Calibration Progress(Phase 1):   0%|          | 0/128 [00:00<?, ?it/s]Calibration Progress(Phase 1):   3%|▎         | 4/128 [00:00<00:03, 33.97it/s]Calibration Progress(Phase 1):   6%|▋         | 8/128 [00:00<00:03, 35.99it/s]Calibration Progress(Phase 1):   9%|▉         | 12/128 [00:00<00:03, 37.14it/s]Calibration Progress(Phase 1):  12%|█▎        | 16/128 [00:00<00:02, 37.42it/s]Calibration Progress(Phase 1):  16%|█▌        | 20/128 [00:00<00:03, 32.65it/s]Calibration Progress(Phase 1):  19%|█▉        | 24/128 [00:00<00:03, 31.05it/s]Calibration Progress(Phase 1):  22%|██▏       | 28/128 [00:00<00:03, 25.16it/s]Calibration Progress(Phase 1):  24%|██▍       | 31/128 [00:01<00:03, 25.88it/s]Calibration Progress(Phase 1):  27%|██▋       | 34/128 [00:01<00:03, 25.87it/s]Calibration Progress(Phase 1):  29%|██▉       | 37/128 [00:01<00:03, 24.80it/s]Calibration Progress(Phase 1):  32%|███▏      | 41/128 [00:01<00:03, 27.03it/s]Calibration Progress(Phase 1):  35%|███▌      | 45/128 [00:01<00:02, 30.12it/s]Calibration Progress(Phase 1):  38%|███▊      | 49/128 [00:01<00:02, 32.39it/s]Calibration Progress(Phase 1):  42%|████▏     | 54/128 [00:01<00:02, 35.00it/s]Calibration Progress(Phase 1):  46%|████▌     | 59/128 [00:01<00:01, 37.65it/s]Calibration Progress(Phase 1):  49%|████▉     | 63/128 [00:01<00:01, 38.22it/s]Calibration Progress(Phase 1):  53%|█████▎    | 68/128 [00:02<00:01, 39.37it/s]Calibration Progress(Phase 1):  57%|█████▋    | 73/128 [00:02<00:01, 39.65it/s]Calibration Progress(Phase 1):  61%|██████    | 78/128 [00:02<00:01, 40.07it/s]Calibration Progress(Phase 1):  65%|██████▍   | 83/128 [00:02<00:01, 40.35it/s]Calibration Progress(Phase 1):  69%|██████▉   | 88/128 [00:02<00:01, 39.54it/s]Calibration Progress(Phase 1):  73%|███████▎  | 93/128 [00:02<00:00, 40.25it/s]Calibration Progress(Phase 1):  77%|███████▋  | 98/128 [00:02<00:00, 39.30it/s]Calibration Progress(Phase 1):  80%|███████▉  | 102/128 [00:02<00:00, 38.69it/s]Calibration Progress(Phase 1):  83%|████████▎ | 106/128 [00:03<00:00, 38.57it/s]Calibration Progress(Phase 1):  86%|████████▌ | 110/128 [00:03<00:00, 38.15it/s]Calibration Progress(Phase 1):  90%|████████▉ | 115/128 [00:03<00:00, 38.75it/s]Calibration Progress(Phase 1):  94%|█████████▍| 120/128 [00:03<00:00, 39.11it/s]Calibration Progress(Phase 1):  98%|█████████▊| 125/128 [00:03<00:00, 39.36it/s]Calibration Progress(Phase 1): 100%|██████████| 128/128 [00:03<00:00, 35.46it/s]
+Calibration Progress(Phase 2):   0%|          | 0/128 [00:00<?, ?it/s]Calibration Progress(Phase 2):   2%|▏         | 3/128 [00:00<00:05, 23.13it/s]Calibration Progress(Phase 2):   5%|▍         | 6/128 [00:00<00:04, 24.78it/s]Calibration Progress(Phase 2):   7%|▋         | 9/128 [00:00<00:04, 25.01it/s]Calibration Progress(Phase 2):   9%|▉         | 12/128 [00:00<00:04, 25.43it/s]Calibration Progress(Phase 2):  12%|█▏        | 15/128 [00:00<00:04, 24.90it/s]Calibration Progress(Phase 2):  14%|█▍        | 18/128 [00:00<00:04, 25.14it/s]Calibration Progress(Phase 2):  16%|█▋        | 21/128 [00:00<00:04, 23.92it/s]Calibration Progress(Phase 2):  19%|█▉        | 24/128 [00:00<00:04, 24.13it/s]Calibration Progress(Phase 2):  21%|██        | 27/128 [00:01<00:04, 23.72it/s]Calibration Progress(Phase 2):  23%|██▎       | 30/128 [00:01<00:03, 25.34it/s]Calibration Progress(Phase 2):  26%|██▌       | 33/128 [00:01<00:03, 24.20it/s]Calibration Progress(Phase 2):  28%|██▊       | 36/128 [00:01<00:03, 24.67it/s]Calibration Progress(Phase 2):  30%|███       | 39/128 [00:01<00:03, 24.79it/s]Calibration Progress(Phase 2):  33%|███▎      | 42/128 [00:01<00:03, 24.69it/s]Calibration Progress(Phase 2):  35%|███▌      | 45/128 [00:01<00:03, 21.37it/s]Calibration Progress(Phase 2):  38%|███▊      | 48/128 [00:02<00:03, 21.55it/s]Calibration Progress(Phase 2):  40%|███▉      | 51/128 [00:02<00:03, 20.57it/s]Calibration Progress(Phase 2):  42%|████▏     | 54/128 [00:02<00:03, 20.76it/s]Calibration Progress(Phase 2):  45%|████▍     | 57/128 [00:02<00:03, 21.49it/s]Calibration Progress(Phase 2):  47%|████▋     | 60/128 [00:02<00:03, 21.90it/s]Calibration Progress(Phase 2):  49%|████▉     | 63/128 [00:02<00:02, 22.57it/s]Calibration Progress(Phase 2):  52%|█████▏    | 66/128 [00:02<00:02, 23.06it/s]Calibration Progress(Phase 2):  54%|█████▍    | 69/128 [00:02<00:02, 23.58it/s]Calibration Progress(Phase 2):  56%|█████▋    | 72/128 [00:03<00:02, 24.77it/s]Calibration Progress(Phase 2):  59%|█████▊    | 75/128 [00:03<00:02, 24.82it/s]Calibration Progress(Phase 2):  61%|██████    | 78/128 [00:03<00:01, 25.03it/s]Calibration Progress(Phase 2):  63%|██████▎   | 81/128 [00:03<00:01, 25.78it/s]Calibration Progress(Phase 2):  66%|██████▌   | 84/128 [00:03<00:01, 25.65it/s]Calibration Progress(Phase 2):  68%|██████▊   | 87/128 [00:03<00:01, 25.44it/s]Calibration Progress(Phase 2):  70%|███████   | 90/128 [00:03<00:01, 25.42it/s]Calibration Progress(Phase 2):  73%|███████▎  | 93/128 [00:03<00:01, 25.22it/s]Calibration Progress(Phase 2):  75%|███████▌  | 96/128 [00:03<00:01, 25.70it/s]Calibration Progress(Phase 2):  77%|███████▋  | 99/128 [00:04<00:01, 24.73it/s]Calibration Progress(Phase 2):  80%|███████▉  | 102/128 [00:04<00:01, 25.84it/s]Calibration Progress(Phase 2):  82%|████████▏ | 105/128 [00:04<00:00, 25.62it/s]Calibration Progress(Phase 2):  84%|████████▍ | 108/128 [00:04<00:00, 25.68it/s]Calibration Progress(Phase 2):  87%|████████▋ | 111/128 [00:04<00:00, 25.38it/s]Calibration Progress(Phase 2):  89%|████████▉ | 114/128 [00:04<00:00, 25.25it/s]Calibration Progress(Phase 2):  91%|█████████▏| 117/128 [00:04<00:00, 25.64it/s]Calibration Progress(Phase 2):  94%|█████████▍| 120/128 [00:04<00:00, 25.34it/s]Calibration Progress(Phase 2):  96%|█████████▌| 123/128 [00:05<00:00, 24.33it/s]Calibration Progress(Phase 2):  98%|█████████▊| 126/128 [00:05<00:00, 23.23it/s]Calibration Progress(Phase 2): 100%|██████████| 128/128 [00:05<00:00, 23.99it/s]
+Finished.
+[17:52:31] PPQ Quantization Alignment Pass Running ...    Finished.
+[17:52:31] PPQ Passive Parameter Quantization Running ... Finished.
+--------- Network Snapshot ---------
+Num of Op:                    [156]
+Num of Quantized Op:          [156]
+Num of Variable:              [268]
+Num of Quantized Var:         [268]
+------- Quantization Snapshot ------
+Num of Quant Config:          [443]
+ACTIVATED:                    [138]
+OVERLAPPED:                   [166]
+PASSIVE:                      [115]
+FP32:                         [24]
+Network Quantization Finished.
+Analysing Graphwise Quantization Error(Phrase 1)::   0%|          | 0/8 [00:00<?, ?it/s]Analysing Graphwise Quantization Error(Phrase 1)::  25%|██▌       | 2/8 [00:00<00:00, 15.42it/s]Analysing Graphwise Quantization Error(Phrase 1)::  50%|█████     | 4/8 [00:00<00:00, 15.47it/s]Analysing Graphwise Quantization Error(Phrase 1)::  75%|███████▌  | 6/8 [00:00<00:00, 15.57it/s]Analysing Graphwise Quantization Error(Phrase 1):: 100%|██████████| 8/8 [00:00<00:00, 16.33it/s]Analysing Graphwise Quantization Error(Phrase 1):: 100%|██████████| 8/8 [00:00<00:00, 14.21it/s]
+Analysing Graphwise Quantization Error(Phrase 2)::   0%|          | 0/8 [00:00<?, ?it/s]Analysing Graphwise Quantization Error(Phrase 2)::  25%|██▌       | 2/8 [00:00<00:00, 10.46it/s]Analysing Graphwise Quantization Error(Phrase 2)::  50%|█████     | 4/8 [00:00<00:00, 10.57it/s]Analysing Graphwise Quantization Error(Phrase 2)::  75%|███████▌  | 6/8 [00:00<00:00, 11.20it/s]Analysing Graphwise Quantization Error(Phrase 2):: 100%|██████████| 8/8 [00:00<00:00, 10.76it/s]Analysing Graphwise Quantization Error(Phrase 2):: 100%|██████████| 8/8 [00:00<00:00,  9.61it/s]
+Layer                              | NOISE:SIGNAL POWER RATIO 
+/body/body.11/f1/f1.0/f1.0.0/Conv: | ████████████████████ | 58.356%
+/body/body.11/f2/f2.0/f2.0.0/Conv: | ██████████████████   | 53.055%
+/body/body.7/f1/f1.0/f1.0.0/Conv:  | ██████████████████   | 51.723%
+/body/body.6/f1/f1.0/f1.0.0/Conv:  | █████████████████    | 50.682%
+/body/body.10/f1/f1.0/f1.0.0/Conv: | █████████████████    | 49.911%
+/body/body.3/f1/f1.0/f1.0.0/Conv:  | █████████████████    | 48.852%
+/body/body.9/f2/f2.0/f2.0.0/Conv:  | ████████████████     | 46.114%
+/body/body.3/f2/f2.0/f2.0.0/Conv:  | ████████████████     | 45.423%
+/body/body.10/f2/f2.0/f2.0.0/Conv: | ████████████████     | 45.277%
+/body/body.5/f1/f1.0/f1.0.0/Conv:  | ███████████████      | 44.719%
+/body/body.7/f2/f2.0/f2.0.0/Conv:  | █████████████        | 39.390%
+/body/body.8/f1/f1.0/f1.0.0/Conv:  | █████████████        | 38.879%
+/head/head.0/Conv:                 | █████████████        | 38.599%
+/body/body.6/f2/f2.0/f2.0.0/Conv:  | █████████████        | 38.388%
+/body/body.9/f1/f1.0/f1.0.0/Conv:  | █████████████        | 38.211%
+/body/body.0/f1/f1.1/Conv:         | █████████████        | 36.868%
+/body/body.8/f2/f2.1/f2.1.0/Conv:  | ████████████         | 36.260%
+/body/body.7/f1/f1.1/Conv:         | ████████████         | 36.152%
+/head/head.1/Conv:                 | ████████████         | 35.771%
+/body/body.5/f2/f2.0/f2.0.0/Conv:  | ████████████         | 35.258%
+/body/body.4/f2/f2.0/f2.0.0/Conv:  | ████████████         | 34.456%
+/body/body.8/f2/f2.0/f2.0.0/Conv:  | ████████████         | 34.084%
+/head/head.5/Conv:                 | ████████████         | 33.782%
+/body/body.3/f1/f1.1/Conv:         | ███████████          | 33.060%
+/body/body.6/f1/f1.1/Conv:         | ███████████          | 31.158%
+/body/body.5/f1/f1.1/Conv:         | ███████████          | 30.802%
+/body/body.2/f1/f1.0/f1.0.0/Conv:  | ██████████           | 30.295%
+/body/body.4/f1/f1.0/f1.0.0/Conv:  | ██████████           | 28.826%
+/body/body.2/f1/f1.1/Conv:         | █████████            | 27.768%
+/body/body.4/f1/f1.1/Conv:         | █████████            | 27.152%
+/body/body.10/f1/f1.1/Conv:        | █████████            | 25.375%
+/body/body.1/f2/f2.0/f2.0.0/Conv:  | ████████             | 24.867%
+/body/body.8/f1/f1.1/Conv:         | ████████             | 24.121%
+/body/body.11/f1/f1.1/Conv:        | ████████             | 22.927%
+/body/body.4/f2/f2.1/f2.1.0/Conv:  | ████████             | 22.605%
+/body/body.9/f1/f1.1/Conv:         | ███████              | 21.606%
+/body/body.2/f2/f2.0/f2.0.0/Conv:  | ███████              | 19.587%
+/body/body.0/f1/f1.0/f1.0.0/Conv:  | ██████               | 16.792%
+/body/body.1/f1/f1.0/f1.0.0/Conv:  | ██████               | 16.610%
+/body/body.1/f1/f1.1/Conv:         | ██████               | 16.499%
+/body/body.2/f2/f2.1/f2.1.0/Conv:  | █████                | 15.612%
+/stem/stem.0/Conv:                 |                      | 0.617%
+/body/body.0/f2/f2.1/f2.1.0/Conv:  |                      | 0.232%
+/body/body.0/f2/f2.0/f2.0.0/Conv:  |                      | 0.163%
+Analysing Layerwise quantization error::   0%|          | 0/44 [00:00<?, ?it/s]Analysing Layerwise quantization error::   2%|▏         | 1/44 [00:00<00:10,  4.16it/s]Analysing Layerwise quantization error::   5%|▍         | 2/44 [00:00<00:10,  4.09it/s]Analysing Layerwise quantization error::   7%|▋         | 3/44 [00:00<00:09,  4.13it/s]Analysing Layerwise quantization error::   9%|▉         | 4/44 [00:00<00:09,  4.02it/s]Analysing Layerwise quantization error::  11%|█▏        | 5/44 [00:01<00:09,  4.10it/s]Analysing Layerwise quantization error::  14%|█▎        | 6/44 [00:01<00:09,  4.12it/s]Analysing Layerwise quantization error::  16%|█▌        | 7/44 [00:01<00:08,  4.12it/s]Analysing Layerwise quantization error::  18%|█▊        | 8/44 [00:01<00:08,  4.19it/s]Analysing Layerwise quantization error::  20%|██        | 9/44 [00:02<00:08,  4.23it/s]Analysing Layerwise quantization error::  23%|██▎       | 10/44 [00:02<00:08,  4.21it/s]Analysing Layerwise quantization error::  25%|██▌       | 11/44 [00:02<00:07,  4.28it/s]Analysing Layerwise quantization error::  27%|██▋       | 12/44 [00:02<00:08,  3.99it/s]Analysing Layerwise quantization error::  30%|██▉       | 13/44 [00:03<00:07,  4.10it/s]Analysing Layerwise quantization error::  32%|███▏      | 14/44 [00:03<00:07,  4.14it/s]Analysing Layerwise quantization error::  34%|███▍      | 15/44 [00:03<00:06,  4.26it/s]Analysing Layerwise quantization error::  36%|███▋      | 16/44 [00:03<00:06,  4.27it/s]Analysing Layerwise quantization error::  39%|███▊      | 17/44 [00:04<00:06,  4.35it/s]Analysing Layerwise quantization error::  41%|████      | 18/44 [00:04<00:06,  4.25it/s]Analysing Layerwise quantization error::  43%|████▎     | 19/44 [00:04<00:06,  4.16it/s]Analysing Layerwise quantization error::  45%|████▌     | 20/44 [00:04<00:05,  4.10it/s]Analysing Layerwise quantization error::  48%|████▊     | 21/44 [00:05<00:05,  4.04it/s]Analysing Layerwise quantization error::  50%|█████     | 22/44 [00:05<00:05,  4.11it/s]Analysing Layerwise quantization error::  52%|█████▏    | 23/44 [00:05<00:05,  4.08it/s]Analysing Layerwise quantization error::  55%|█████▍    | 24/44 [00:05<00:04,  4.18it/s]Analysing Layerwise quantization error::  57%|█████▋    | 25/44 [00:05<00:04,  4.29it/s]Analysing Layerwise quantization error::  59%|█████▉    | 26/44 [00:06<00:04,  4.21it/s]Analysing Layerwise quantization error::  61%|██████▏   | 27/44 [00:06<00:04,  4.08it/s]Analysing Layerwise quantization error::  64%|██████▎   | 28/44 [00:06<00:03,  4.04it/s]Analysing Layerwise quantization error::  66%|██████▌   | 29/44 [00:07<00:03,  3.78it/s]Analysing Layerwise quantization error::  68%|██████▊   | 30/44 [00:07<00:03,  3.82it/s]Analysing Layerwise quantization error::  70%|███████   | 31/44 [00:07<00:03,  3.95it/s]Analysing Layerwise quantization error::  73%|███████▎  | 32/44 [00:07<00:02,  4.01it/s]Analysing Layerwise quantization error::  75%|███████▌  | 33/44 [00:08<00:02,  4.14it/s]Analysing Layerwise quantization error::  77%|███████▋  | 34/44 [00:08<00:02,  4.21it/s]Analysing Layerwise quantization error::  80%|███████▉  | 35/44 [00:08<00:02,  4.23it/s]Analysing Layerwise quantization error::  82%|████████▏ | 36/44 [00:08<00:01,  4.03it/s]Analysing Layerwise quantization error::  84%|████████▍ | 37/44 [00:09<00:01,  3.88it/s]Analysing Layerwise quantization error::  86%|████████▋ | 38/44 [00:09<00:01,  3.98it/s]Analysing Layerwise quantization error::  89%|████████▊ | 39/44 [00:09<00:01,  4.03it/s]Analysing Layerwise quantization error::  91%|█████████ | 40/44 [00:09<00:00,  4.07it/s]Analysing Layerwise quantization error::  93%|█████████▎| 41/44 [00:09<00:00,  4.20it/s]Analysing Layerwise quantization error::  95%|█████████▌| 42/44 [00:10<00:00,  4.25it/s]Analysing Layerwise quantization error::  98%|█████████▊| 43/44 [00:10<00:00,  4.24it/s]Analysing Layerwise quantization error:: 100%|██████████| 44/44 [00:10<00:00,  4.23it/s]Analysing Layerwise quantization error:: 100%|██████████| 44/44 [00:10<00:00,  4.12it/s]
+Layer                              | NOISE:SIGNAL POWER RATIO 
+/head/head.0/Conv:                 | ████████████████████ | 0.110%
+/body/body.9/f1/f1.0/f1.0.0/Conv:  | ████████             | 0.043%
+/body/body.9/f2/f2.0/f2.0.0/Conv:  | ███████              | 0.041%
+/body/body.11/f2/f2.0/f2.0.0/Conv: | ██████               | 0.033%
+/body/body.1/f2/f2.0/f2.0.0/Conv:  | █████                | 0.028%
+/head/head.5/Conv:                 | ███                  | 0.016%
+/body/body.8/f2/f2.1/f2.1.0/Conv:  | ██                   | 0.013%
+/body/body.10/f2/f2.0/f2.0.0/Conv: | ██                   | 0.010%
+/body/body.5/f2/f2.0/f2.0.0/Conv:  | ██                   | 0.008%
+/body/body.11/f1/f1.0/f1.0.0/Conv: | █                    | 0.006%
+/body/body.8/f1/f1.0/f1.0.0/Conv:  | █                    | 0.006%
+/stem/stem.0/Conv:                 | █                    | 0.006%
+/body/body.2/f1/f1.0/f1.0.0/Conv:  | █                    | 0.005%
+/body/body.10/f1/f1.0/f1.0.0/Conv: | █                    | 0.004%
+/body/body.0/f2/f2.1/f2.1.0/Conv:  | █                    | 0.004%
+/body/body.4/f2/f2.1/f2.1.0/Conv:  | █                    | 0.003%
+/body/body.5/f1/f1.0/f1.0.0/Conv:  |                      | 0.002%
+/body/body.6/f2/f2.0/f2.0.0/Conv:  |                      | 0.002%
+/body/body.8/f2/f2.0/f2.0.0/Conv:  |                      | 0.002%
+/body/body.4/f2/f2.0/f2.0.0/Conv:  |                      | 0.002%
+/body/body.0/f1/f1.1/Conv:         |                      | 0.002%
+/body/body.6/f1/f1.0/f1.0.0/Conv:  |                      | 0.002%
+/body/body.6/f1/f1.1/Conv:         |                      | 0.002%
+/body/body.11/f1/f1.1/Conv:        |                      | 0.002%
+/body/body.10/f1/f1.1/Conv:        |                      | 0.002%
+/body/body.3/f2/f2.0/f2.0.0/Conv:  |                      | 0.002%
+/body/body.0/f1/f1.0/f1.0.0/Conv:  |                      | 0.001%
+/body/body.3/f1/f1.0/f1.0.0/Conv:  |                      | 0.001%
+/body/body.0/f2/f2.0/f2.0.0/Conv:  |                      | 0.001%
+/body/body.2/f2/f2.0/f2.0.0/Conv:  |                      | 0.001%
+/body/body.1/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.7/f2/f2.0/f2.0.0/Conv:  |                      | 0.001%
+/body/body.8/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.2/f2/f2.1/f2.1.0/Conv:  |                      | 0.001%
+/body/body.4/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.1/f1/f1.0/f1.0.0/Conv:  |                      | 0.001%
+/body/body.9/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.5/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.3/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.7/f1/f1.1/Conv:         |                      | 0.001%
+/body/body.2/f1/f1.1/Conv:         |                      | 0.001%
+/head/head.1/Conv:                 |                      | 0.000%
+/body/body.7/f1/f1.0/f1.0.0/Conv:  |                      | 0.000%
+/body/body.4/f1/f1.0/f1.0.0/Conv:  |                      | 0.000%
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_0 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_14 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_1 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_15 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_10 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_12 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_11 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_13 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_16 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_2 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_17 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_3 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_18 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_4 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_19 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_5 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_20 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_6 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_21 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_7 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_22 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_8 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_23 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_9 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_0 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_14 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_1 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_15 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_10 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_12 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_11 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_13 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_16 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_2 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_17 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_3 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_18 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_4 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_19 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_5 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_20 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_6 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_21 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_7 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_22 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_8 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_23 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_9 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_0 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_14 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_1 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_15 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_10 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_12 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_11 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_13 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_16 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_2 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_17 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_3 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_18 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_4 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_19 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_5 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_20 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_6 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_21 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_7 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_22 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_8 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_23 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_9 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_0 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_14 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_1 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_15 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_10 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_12 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_11 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_13 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_16 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_2 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_17 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_3 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_18 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_4 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_19 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_5 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_20 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_6 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_21 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_7 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_22 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_8 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_23 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  Skip PPQ_Variable_9 because it's not exportable
+[INFO][ESPDL][2026-10-28 17:52:43]:  skip not QuantableOperation
+[ERROR][ESPDL][2026-10-28 17:52:43]:  When deploying with esp-dl, the calculation result of the bnfold_mul_0(type: Mul) operator will cause an exception. Please adjust the model to ensure that (output_exponent - input0_exponent - input1_exponent) >= 0.
+[ERROR][ESPDL][2026-10-28 17:52:43]:  When deploying with esp-dl, the calculation result of the bnfold_mul_1(type: Mul) operator will cause an exception. Please adjust the model to ensure that (output_exponent - input0_exponent - input1_exponent) >= 0.
+[ERROR][ESPDL][2026-10-28 17:52:43]:  When deploying with esp-dl, the calculation result of the bnfold_mul_2(type: Mul) operator will cause an exception. Please adjust the model to ensure that (output_exponent - input0_exponent - input1_exponent) >= 0.
+[ERROR][ESPDL][2026-10-28 17:52:43]:  When deploying with esp-dl, the calculation result of the bnfold_mul_10(type: Mul) operator will cause an exception. Please adjust the model to ensure that (output_exponent - input0_exponent - input1_exponent) >= 0.
+[ERROR][ESPDL][2026-10-28 17:52:43]:  When deploying with esp-dl, the calculation result of the bnfold_mul_11(type: Mul) operator will cause an exception. Please adjust the model to ensure that (output_exponent - input0_exponent - input1_exponent) >= 0.
+tv0: expected 11  float 11  int8(ppq) 11  margin 6.750  max|dq| 13.448
+tv1: expected 5  float 5  int8(ppq) 5  margin 3.000  max|dq| 7.291
+tv2: expected 9  float 9  int8(ppq) 9  margin 2.000  max|dq| 10.558
+tv3: expected 0  float 0  int8(ppq) 0  margin 6.000  max|dq| 5.228
