@@ -253,3 +253,81 @@ step silently failed.
 
 Append what you did to `docs/EXPERIMENTS.md` as a new numbered entry, negative
 results included.
+
+
+---
+
+# Milestone 2: test-set accuracy measured on the chip
+
+Milestone 1 ran four clips. Four clips is not an accuracy measurement — one flip
+moves it 25 points — so the headline number from E29, "3/4", says almost nothing
+about how good the deployed model is. This milestone produces the real number, and
+**it needs no new hardware**: 4,890 clips at ~0.95 s is about **77 minutes** on the
+plain ESP32 you already have.
+
+## How it works
+
+The board has no dataset, so the features travel as a file. `app_eval.cpp` replaces
+`app_main.cpp` and turns the device into a server: the host sends one 40x101 float32
+log-mel over UART, the device quantizes it **with its own input exponent** — the same
+path `app_main.cpp` already uses for `tv_input`, so no scale is duplicated on the
+host — runs the model, and replies with the predicted class, the 12 int8 logits and
+the inference time.
+
+Everything is pre-built:
+
+| file | what |
+|---|---|
+| `deploy/onchip/eval_firmware/app_eval.cpp` | device-side evaluation server |
+| `deploy/onchip/eval_features_1200.npz` | 1,200-clip stratified subset, 8 MB, ~19 min |
+| `deploy/onchip/eval_features.npz` | the full 4,890-clip test set, 32 MB, ~77 min |
+| `scripts/eval_onchip.py` | host driver: streams clips, tallies, saves after every clip |
+| `scripts/make_eval_features.py` | regenerates either file (deterministic, seed 0) |
+
+Both feature files also carry the **host float32 prediction for every clip**, so the
+report is a paired comparison — same model, same clips — and the difference is int8
+quantization and nothing else. Host float32 accuracy: **98.02 %** on the full set,
+97.33 % on the 1,200 subset.
+
+## Running it
+
+Build with `app_eval.cpp` in place of `app_main.cpp` (`SRCS app_eval.cpp` in
+`main/CMakeLists.txt`, same `models/model.espdl` embed), flash, then **close the
+serial monitor** and:
+
+```bash
+# 19-minute smoke run first -- confirms the plumbing before committing 77 minutes
+python scripts/eval_onchip.py --features deploy/onchip/eval_features_1200.npz \
+    --port COM5 --out onchip_eval_bcresnet-2_1200.json
+
+# the real number
+python scripts/eval_onchip.py --features deploy/onchip/eval_features.npz \
+    --port COM5 --out onchip_eval_bcresnet-2.json
+```
+
+Results are written after every clip and `--resume` continues an interrupted run, so
+a dropped USB connection costs minutes rather than the whole hour.
+
+## What it prints
+
+```
+ON-CHIP int8 accuracy    : xx.xx%
+host float32, same clips : 98.02%
+cost of int8             : -x.xx points
+chip disagrees with float: N of 4890 clips
+mean inference           : ~949 ms
+top confusions: ...
+```
+
+**That `cost of int8` line is the deliverable of this phase.** It is the number that
+turns "the model runs on the chip" into a result, and it is the one figure the
+published MCU KWS literature usually reports from host simulation rather than from
+silicon.
+
+## Verified in simulation
+
+The host driver was tested against an emulated device on a virtual serial port that
+replies with the host float prediction: accuracy came back identical to the host
+float accuracy with **0 disagreements over 120 clips**, which confirms the indices,
+framing, parsing and tallying all line up. `--resume` was tested by stopping at 60
+clips and continuing to 120. Not yet verified against the real firmware.
