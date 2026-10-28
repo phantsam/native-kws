@@ -40,3 +40,4 @@
 2026-10-28 13:49:29 launched v2_12_bcresnet-1 on GPU 0: --task v2_12 --model bcresnet-1 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
 2026-10-28 13:49:29 launched v2_12_bcresnet-2 on GPU 0: --task v2_12 --model bcresnet-2 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
 2026-10-28 13:49:29 launched v2_12_bcresnet-3 on GPU 0: --task v2_12 --model bcresnet-3 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
+2026-10-28 14:38:32 queue empty, exiting

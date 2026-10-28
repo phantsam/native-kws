@@ -29,11 +29,16 @@ Two routes for NativeKWS afterwards, neither of them this milestone:
 Choosing between those is a real research decision — note that all three published
 Mamba-on-MCU papers dodge it by keeping the recurrence in float. Do not start it here.
 
-## Already prepared for you, in `deploy/onchip/`
+## Already prepared for you, in `deploy/onchip/<model>/`
+
+One directory per model: `bcresnet-1/`, `bcresnet-2/`, `bcresnet-3/`, `bcresnet-8/`.
+Each holds the same four things, and **the files inside a directory belong together** —
+mixing an ONNX with another directory's calibration or test vectors gives a silently
+wrong result.
 
 | file | what it is |
 |---|---|
-| `bcresnet8.onnx` | the network, opset 13, fixed batch 1, input `logmel` (1,1,40,101), **BatchNorm already folded out** |
+| `<model>.onnx` | the network, opset 13, fixed batch 1, input `logmel` (1,1,40,101), **BatchNorm already folded out** |
 | `calib_128.npy` | 128 real log-mel features for int8 post-training quantization |
 | `test_vectors.h` | 4 inputs (`yes`, `no`, `stop`, `_silence_`) + the float logits the host produced |
 | `test_vectors.npz` | the same, for host-side checking |
@@ -103,14 +108,42 @@ memory-capability configuration problem, not a size problem: check the `dl::Mode
 memory-manager arguments and ESP-DL's cap settings rather than shrinking the model
 further.
 
-Export any of them with:
+**All three small scales are trained and exported**, each in its own directory with
+its own ONNX, calibration tensors and test vectors:
+
+| directory | params | float accuracy (official V2-12) |
+|---|---|---|
+| `deploy/onchip/bcresnet-1/` | 9,232 | 96.91 % |
+| `deploy/onchip/bcresnet-2/` | 27,284 | **98.02 %** |
+| `deploy/onchip/bcresnet-3/` | 54,168 | 98.32 % |
+
+(The accuracies here are measured in fp32 with no autocast, so they differ by up to
+0.05 from the best-by-validation figures in `RESULTS.md`, which are evaluated in
+bf16. Same checkpoints.)
+
+Regenerate or export another run with:
 
 ```bash
 python scripts/export_onchip.py --run runs/v2_12_bcresnet-2    # on the training machine
 ```
 
-which writes `deploy/onchip/bcresnet-2/` and prints the largest activation so the fit
-is known before anything is flashed.
+which prints the largest activation, so whether it fits is known before flashing.
+
+### Deploying BC-ResNet-2
+
+Note that `scripts/quantize_onchip.py` (on the `e26-esp32-bringup` branch) hard-codes
+`deploy/onchip/bcresnet8.onnx`, a path that no longer exists — the τ=8 export moved to
+`deploy/onchip/bcresnet-8/`, so the old default now fails loudly instead of silently
+loading the wrong model. Give it a `--src` argument pointing at the directory
+you want (its `test_vectors.npz` and `calib_128.npy` must come from the *same*
+directory as the ONNX, or the calibration and the graph will not correspond):
+
+```bash
+python scripts/quantize_onchip.py --src deploy/onchip/bcresnet-2 \
+    --out deploy/esp32_kws/main/models/bcresnet-2.espdl
+```
+
+Then rebuild with the new `test_vectors.h` from that directory and the new `.espdl`.
 
 Note what this says about the project as a whole: NativeKWS-H's whole-window peak is
 189 KB, so **the final model does not fit this chip whole-window either**. Its
@@ -133,7 +166,7 @@ optimise away — slow is fine for this milestone.
 ## Steps
 
 1. Install ESP-IDF ≥ 5.3 and export its environment. Confirm with `idf.py --version`.
-2. `pip install esp-ppq`. Quantize `bcresnet8.onnx` to int8 `.espdl`, following the
+2. `pip install esp-ppq`. Quantize the chosen `<model>.onnx` to int8 `.espdl`, following the
    ESP-DL quantization tutorial, with: target `"c"`, input shape `[1,1,40,101]`, and
    the calibration tensors from `calib_128.npy`. Read the tutorial for the current
    API rather than guessing it. Keep the quantization report it prints — if any layer

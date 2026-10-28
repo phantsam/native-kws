@@ -1,0 +1,29 @@
+{
+  "source_run": "runs/v2_12_bcresnet-1",
+  "ckpt": "best.pt",
+  "params": 9232,
+  "float_test_accuracy_v2_12": 96.91,
+  "opset": 13,
+  "input": "logmel (1,1,40,101) float32, 40 mel bands, 30 ms window, 10 ms hop",
+  "batchnorm_folded": "depthwise_conv",
+  "onnx_ops": [
+    "Add",
+    "Conv",
+    "Flatten",
+    "GlobalAveragePool",
+    "Mul",
+    "ReduceMean",
+    "Relu",
+    "Reshape",
+    "Sigmoid"
+  ],
+  "largest_activation_bytes_int8": 32320,
+  "weights_bytes_int8": 9232,
+  "ops_missing_from_espdl_whitelist": [],
+  "test_vector_sources": [
+    "yes/022cd682_nohash_0.wav",
+    "no/03401e93_nohash_0.wav",
+    "stop/022cd682_nohash_0.wav",
+    "_silence_/1024.wav"
+  ]
+}

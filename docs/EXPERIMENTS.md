@@ -411,6 +411,22 @@ The first ESP32 bring-up (E26, run on the machine with the board) got as far as 
 
 **Not fixed, noted:** the board was initially invisible on USB (no CP210x/CH340/FTDI enumeration at all) and later worked; cause unknown. ESP-IDF v5.4.2 will not install from Git Bash (MSYS unsupported) — use PowerShell. Automatic flash-mode entry intermittently fails with `Wrong boot mode (0x13)`; retrying always worked, so the BOOT button was never needed.
 
+### E28: Small BC-ResNet scales trained for the ESP32 — and they beat the paper (2026-10-28)
+* **Why:** E26/E27 established that BC-ResNet-8 cannot fit a PSRAM-less ESP32 (arena 391 KB vs a 108 KB largest free block). Smaller scales were item 4 of "Planned next"; the device made them the critical path.
+* **Trained** `bcresnet-1/2/3` on v2_12 with the official BC-ResNet SGD recipe (lr 0.1, wd 1e-3, bs 100, no label smoothing), identical to the τ=8 reference, so the scales are directly comparable.
+
+| model | params | ours, best-by-valid | ours, last EMA | BC-ResNet paper | Δ vs paper | largest activation | arena ≈1.55x | fits 108 KB |
+|---|---|---|---|---|---|---|---|---|
+| BC-ResNet-1 | 9,232 | 96.81 | 96.99 | 96.6 | +0.21 | 31.6 KB | ~49 KB | **yes** |
+| BC-ResNet-2 | 27,284 | **98.02** | 98.02 | 97.4 | **+0.62** | 63.1 KB | ~98 KB | yes, ~10 KB spare |
+| BC-ResNet-3 | 54,168 | **98.36** | 98.40 | 97.6 | **+0.76** | 94.7 KB | ~147 KB | no |
+| BC-ResNet-8 | 321,068 | 98.67 | 98.83 | 98.7 | −0.03 | 252.5 KB | 391 KB measured | no |
+
+* **The interesting result is the shape of the Δ column.** Our pipeline reproduces the paper almost exactly at τ=8 (−0.03) but beats it by **0.62–0.76 at τ=2 and τ=3**. The optimiser recipe is the paper's, so the gain comes from the rest of the pipeline (SpecAugment settings, EMA, per-epoch `_unknown_` resampling, time shift) and it helps small models far more than large ones. Two consequences: the published small-scale BC-ResNet numbers understate the architecture, and the understatement is concentrated exactly in the parameter regime where MCU deployment actually lives. This is worth a paragraph in the paper — accuracy-per-parameter curves in this literature are usually quoted from the original papers without re-running the small scales.
+* **Exported** all three to `deploy/onchip/bcresnet-{1,2,3}/` (ONNX + 128 calibration tensors + 4 test vectors + host logits). Every one: 12 BatchNorms rewritten as depthwise Conv, **no operator off the ESP-DL whitelist**.
+* **Deployment target is BC-ResNet-2**: 98.02 % at 27 K parameters — 12x smaller than τ=8 for 0.65 points, and it fits. τ=3 would add +0.34 but needs streaming execution or PSRAM.
+* **Still untested on hardware.** No on-chip prediction or latency figure exists yet for any scale.
+
 ---
 
 ## Planned next
