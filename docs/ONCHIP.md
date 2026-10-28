@@ -54,14 +54,42 @@ removes all of it: onnxsim folds what sits behind a Conv, and the 12 that surviv
 directly behind a Conv) become **depthwise `Conv` nodes with kernel 1**, carrying the
 same affine in weights and bias.
 
-Those 12 were first written as `Mul` + `Add`, which is mathematically identical and
-also whitelisted — and it was wrong. ESP-DL's int8 `Mul` requires
-`output_exponent - input0_exponent - input1_exponent >= 0`, and the small
-SubSpectralNorm scales violate it, so the deployment check rejected 5 nodes
-(`bnfold_mul_0/1/2/10/11`) and the on-chip result would have been silently wrong
-while esp-ppq's PC simulation still looked correct. A depthwise `Conv` gets a
-per-output-channel scale of its own, so the constraint does not arise. Reported from
-the device by the first bring-up run; see `docs/EXPERIMENTS.md` E26.
+Those 12 were first written as `Mul` + `Add`. The device rejected 5 of them on
+ESP-DL's int8 `Mul` constraint `output_exponent - input0_exponent - input1_exponent
+>= 0` (E26), so they became depthwise `Conv`, which did measurably help — at τ=8 the
+`stop` margin doubled, 2.0 → 4.25 (E29).
+
+**But the reason given for that fix was wrong, and it matters.** E27 claimed a
+depthwise Conv "gets a per-output-channel scale of its own, so the constraint does
+not arise". **On the ESP32 it does not.** ESP-DL quantizes *per tensor* on ESP32 and
+ESP32-S3; per-channel Conv exists only on ESP32-P4/S31. So one power-of-two exponent
+must cover a fold whose channel scales span three orders of magnitude, and the small
+channels round to zero. E29 measured BC-ResNet-2's `bnfold_conv_0` at a **581×
+spread, 39 of 80 channels zeroed, 81.9 % layerwise noise** — which cost that run a
+test vector. The fix was right in kind and insufficient in degree.
+
+**What actually addresses it: cross-layer equalization, applied in the export.** The
+reshape in front of a fold sends Conv output channel `k` to fold channels
+`k*S … k*S+S-1`, so multiplying the Conv's channel `k` by `g[k]` and dividing those
+`S` fold channels by `g[k]` is an **exact identity**. `g` is the geometric mean over
+the sub-bands, damped by a per-layer exponent `alpha` chosen from a small grid,
+because moving the whole spread fixes the fold but inflates the Conv feeding it and
+which trade wins differs by layer. A layer is rewritten only if some `alpha` strictly
+reduces the destroyed-channel count over the *pair*, and only when the Conv's output
+has no other consumer (otherwise rescaling it would corrupt a residual branch).
+
+Channels left with ≤2 quantization levels, before → after equalization:
+
+| model | destroyed channels | worst layer |
+|---|---|---|
+| BC-ResNet-1 | 87 → **40** | — |
+| BC-ResNet-2 | 249 → **74** | `bnfold_conv_0` 72 → **1** |
+| BC-ResNet-3 | 324 → **56** | `bnfold_conv_1` 78 → **4** |
+| BC-ResNet-8 | 676 → **51** | `bnfold_conv_0` 123 → **3** |
+
+Verified exact: all four graphs still match PyTorch to ≤1e-5 with unchanged argmax.
+This is a screening metric, not an accuracy measurement — esp-ppq's layerwise noise
+table is the real check, so re-quantize and compare before trusting it.
 
 Verified: operators are `Add, Conv, Flatten, GlobalAveragePool, Mul, ReduceMean,
 Relu, Reshape, Sigmoid`, **all whitelisted** (the remaining `Mul`s are the
@@ -95,18 +123,25 @@ need either streaming execution or a board with PSRAM. (An earlier version of th
 file said to start at τ=2 and that τ=3 was "tight"; that predated the measured 1.55x
 arena ratio and was wrong.)
 
-**One more thing from the device log**, which the arena failure overshadowed:
+**Measured on device (E29), superseding the estimates above.** τ=2 runs: arena
+**98.64 KB**, **949 ms** per inference, `model->test()` PASS so the chip is bit-exact
+with esp-ppq, **3/4** test vectors correct (`no` → `_unknown_`, caused by the
+`bnfold_conv_0` damage described above, not by anything on the chip). τ=3 needs a
+**191.75 KB** arena and does not fit.
 
-```
-E esp-dl: Input cap=0x804 can not callocate with MALLOC_CAP_SIMD, please try other caps.
-```
+Two corrections to earlier guesses in this file:
 
-ESP-DL asked for SIMD-capable memory, which the plain ESP32 has none of — the vector
-unit is an ESP32-S3 feature. On τ=8 this was moot because the arena was too big
-anyway, but it may well reappear at τ=1 with plenty of RAM free. If it does, it is a
-memory-capability configuration problem, not a size problem: check the `dl::Model`
-memory-manager arguments and ESP-DL's cap settings rather than shrinking the model
-further.
+* **The 1.55× arena ratio does not generalise.** Measured: τ=2 1.56×, τ=8 1.55×, but
+  τ=3 **2.02×**. The greedy manager's packing depends on the graph, so the arena has
+  to be measured per model, not extrapolated.
+* **`Input cap=0x804 can not callocate with MALLOC_CAP_SIMD` is a symptom, not a
+  configuration bug.** This file previously guessed it was a capability
+  misconfiguration worth fixing. It is not: `0x804` is
+  `MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT`, it is ESP-DL reporting the request that
+  failed, and it appears only when the arena allocation fails (τ=3, τ=8) and not at
+  τ=2. Ignore it and read the allocation size instead.
+* The usable ceiling is **~108 KB contiguous**, not the 152 KB free at boot: ESP-DL
+  allocates ~80–97 KB of other model structures first and splits the large block.
 
 **All three small scales are trained and exported**, each in its own directory with
 its own ONNX, calibration tensors and test vectors:

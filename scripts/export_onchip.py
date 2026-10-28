@@ -89,6 +89,89 @@ def bn_to_depthwise_conv(model):
     return model
 
 
+LSB_LIMIT = 2.0  # a channel whose max|w| is below this many quantization steps is destroyed
+
+
+def _destroyed(w):
+    """Channels left with <= LSB_LIMIT levels under one symmetric per-tensor int8 scale."""
+    per = np.abs(w).reshape(w.shape[0], -1).max(1)
+    return int((per < LSB_LIMIT * per.max() / 127.0).sum())
+
+
+def equalize_ssn_folds(model, verbose=True):
+    """Move per-channel scale out of each SubSpectralNorm fold into the Conv feeding it.
+
+    ESP-DL quantizes **per tensor** on the ESP32 and ESP32-S3 (per-channel Conv exists
+    only on P4/S31), so one power-of-two exponent has to cover a fold whose channel
+    scales span three orders of magnitude, and the small channels round to zero. E29
+    measured BC-ResNet-2's `bnfold_conv_0` at a 581x spread with 39 of 80 channels
+    zeroed and 81.9 % layerwise noise, which is what cost that run a test vector.
+
+    The reshape in front of a fold sends Conv output channel k to fold channels
+    k*S .. k*S+S-1, so multiplying the Conv's channel k by g[k] and dividing those S
+    fold channels by g[k] is an exact identity -- cross-layer equalization, with the
+    unusual twist that the fold is per-(channel, sub-band) while the Conv is only
+    per-channel, so g can only carry the across-channel part of the spread.
+
+    g is the geometric mean over the S sub-bands, damped by an exponent alpha chosen
+    per layer from a small grid: moving the whole spread fixes the fold but inflates
+    the Conv feeding it, and which trade wins differs by layer. A layer is only
+    rewritten if some alpha strictly reduces the destroyed-channel count over the
+    *pair*; otherwise it is left alone.
+    """
+    init = {i.name: numpy_helper.to_array(i) for i in model.graph.initializer}
+    prod = {o: n for n in model.graph.node for o in n.output}
+    uses = {}
+    for n in model.graph.node:
+        for i in n.input:
+            uses[i] = uses.get(i, 0) + 1
+
+    changed, before, after = {}, 0, 0
+    for node in model.graph.node:
+        if not node.name.startswith("bnfold_conv"):
+            continue
+        rs = prod.get(node.input[0])
+        if rs is None or rs.op_type != "Reshape" or uses.get(rs.output[0], 0) != 1:
+            continue
+        cv = prod.get(rs.input[0])
+        # if the Conv's output feeds anything besides this reshape, rescaling it is unsafe
+        if cv is None or cv.op_type != "Conv" or uses.get(cv.output[0], 0) != 1:
+            continue
+        w, cw = init[node.input[1]], init[cv.input[1]]
+        if w.shape[0] % cw.shape[0]:
+            continue
+        k, s = cw.shape[0], w.shape[0] // cw.shape[0]
+        g_full = np.exp(np.log(np.maximum(np.abs(w).reshape(k, s, -1).max(2), 1e-30)).mean(1))
+        base = _destroyed(w) + _destroyed(cw)
+        best, best_a = base, None
+        for alpha in (0.25, 0.5, 0.75, 1.0):
+            g = g_full**alpha
+            w2 = (w.reshape(k, s, -1) / g[:, None, None]).reshape(w.shape)
+            cw2 = cw * g.reshape(-1, *([1] * (cw.ndim - 1)))
+            d = _destroyed(w2) + _destroyed(cw2)
+            if d < best:
+                best, best_a = d, alpha
+        before += base
+        after += best
+        if best_a is None:
+            continue
+        g = g_full**best_a
+        changed[node.input[1]] = (w.reshape(k, s, -1) / g[:, None, None]).reshape(w.shape)
+        changed[cv.input[1]] = cw * g.reshape(-1, *([1] * (cw.ndim - 1)))
+        if len(cv.input) > 2:  # conv bias scales with the channel
+            changed[cv.input[2]] = init[cv.input[2]] * g
+        if verbose:
+            print(f"    {node.name:16s} alpha {best_a:4.2f}  destroyed {base:3d} -> {best:3d}")
+
+    keep = [i for i in model.graph.initializer if i.name not in changed]
+    del model.graph.initializer[:]
+    model.graph.initializer.extend(keep)
+    model.graph.initializer.extend(
+        numpy_helper.from_array(v.astype(np.float32), k) for k, v in changed.items())
+    print(f"  equalized {len(changed)} tensors; destroyed channels {before} -> {after}")
+    return model, before, after
+
+
 def strip_unused_initializers(model):
     used = {i for node in model.graph.node for i in node.input}
     keep = [i for i in model.graph.initializer if i.name in used]
@@ -106,6 +189,7 @@ def make_espdl_ready(path):
     m, ok = onnxsim.simplify(m)
     print(f"  onnxsim: {'ok' if ok else 'CHECK FAILED'}")
     m = strip_unused_initializers(bn_to_depthwise_conv(m))
+    m, dmg_before, dmg_after = equalize_ssn_folds(m)
     m = onnx.shape_inference.infer_shapes(m)
     onnx.checker.check_model(m)
     onnx.save(m, path)
@@ -114,7 +198,7 @@ def make_espdl_ready(path):
     print(f"  ops before: {before}")
     print(f"  ops after : {after}")
     print(f"  not on the ESP-DL whitelist: {missing if missing else 'none'}")
-    return after, missing
+    return after, missing, dmg_before, dmg_after
 
 
 def largest_activation(model):
@@ -171,7 +255,7 @@ def main():
         torch.onnx.export(model, (torch.zeros(1, 1, 40, 101),), onnx_path,
                           input_names=["logmel"], output_names=["logits"],
                           opset_version=13, dynamo=False)
-        ops, missing = make_espdl_ready(onnx_path)
+        ops, missing, dmg0, dmg1 = make_espdl_ready(onnx_path)
         print(f"wrote {onnx_path} ({os.path.getsize(onnx_path) / 1024:.0f} KB)")
 
         rng = np.random.default_rng(0)
@@ -220,6 +304,8 @@ def main():
                    "float_test_accuracy_v2_12": round(acc, 2), "opset": 13,
                    "input": "logmel (1,1,40,101) float32, 40 mel bands, 30 ms window, 10 ms hop",
                    "batchnorm_folded": "depthwise_conv", "onnx_ops": ops,
+                   "ssn_equalized": True,
+                   "destroyed_channels_per_tensor_int8": {"before": dmg0, "after": dmg1},
                    "largest_activation_bytes_int8": int(act),
                    "weights_bytes_int8": int(n_par),
                    "ops_missing_from_espdl_whitelist": missing,

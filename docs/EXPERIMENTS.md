@@ -427,6 +427,25 @@ The first ESP32 bring-up (E26, run on the machine with the board) got as far as 
 * **Deployment target is BC-ResNet-2**: 98.02 % at 27 K parameters — 12x smaller than τ=8 for 0.65 points, and it fits. τ=3 would add +0.34 but needs streaming execution or PSRAM.
 * **Still untested on hardware.** No on-chip prediction or latency figure exists yet for any scale.
 
+### E30: Cross-layer equalization for the SubSpectralNorm folds (2026-10-28)
+Follows E29, which was recorded on the `e26-esp32-bringup` branch.
+
+* **E27's reasoning was wrong and E29 caught it.** E27 justified rewriting the SubSpectralNorm BatchNorms as depthwise Conv on the grounds that "a Conv gets a per-output-channel quantization scale of its own, so the exponent constraint does not arise". **ESP-DL quantizes per tensor on ESP32 and ESP32-S3**; per-channel Conv exists only on P4/S31. The rewrite still helped (τ=8 `stop` margin 2.0 → 4.25, E29), so the conclusion held while the premise did not — the depthwise Conv removed the `Mul` exponent *rule* violation but left the underlying problem, which is the channel-scale spread itself.
+* **The actual problem.** With one power-of-two exponent per tensor, a fold whose channel scales span three orders of magnitude loses its small channels entirely. E29 measured τ=2 `bnfold_conv_0` at 581× spread, 39/80 channels zeroed, 81.9 % layerwise noise, and `no` misclassified as `_unknown_`.
+* **Fix: exact cross-layer equalization in the export.** The reshape in front of a fold maps Conv output channel `k` to fold channels `k*S … k*S+S-1`, so scaling the Conv's channel `k` (weights *and* bias) by `g[k]` while dividing those `S` fold channels by `g[k]` is an **exact identity**. The unusual part is that the fold is per-(channel, sub-band) while the Conv is only per-channel, so `g` can carry only the across-channel part of the spread; the within-sub-band residual stays.
+* **Per-layer damping, selected automatically.** `g` is the geometric mean over sub-bands raised to `alpha`, with `alpha` chosen per layer from {0.25, 0.5, 0.75, 1.0} to minimise the number of destroyed channels across the *pair*. This matters: moving the full spread fixes the fold but inflates the Conv feeding it, and a blanket `alpha = 1` made τ=1 `bnfold_conv_10` **worse** (spread 2792× → 3300×, zeroed 6 → 8). A layer is rewritten only if some `alpha` strictly helps, and only if the Conv's output has no second consumer — otherwise rescaling it would corrupt a residual branch. Three layers in τ=1 and τ=3 are left untouched on that basis.
+* **Result.** Channels left with ≤2 quantization levels under a single per-tensor scale:
+
+| model | destroyed channels | worst layer | float logits vs PyTorch |
+|---|---|---|---|
+| BC-ResNet-1 | 87 → **40** | — | 3.8e-06, argmax unchanged |
+| BC-ResNet-2 | 249 → **74** | `bnfold_conv_0` 72 → **1** | 2.4e-06, argmax unchanged |
+| BC-ResNet-3 | 324 → **56** | `bnfold_conv_1` 78 → **4** | 3.8e-06, argmax unchanged |
+| BC-ResNet-8 | 676 → **51** | `bnfold_conv_0` 123 → **3** | 9.5e-06, argmax unchanged |
+
+* **Caveat, stated plainly:** destroyed-channel count is a *screening* metric chosen because it predicts the observed failure, not a measurement of accuracy. Whether τ=2 now gets 4/4 has to be settled by esp-ppq's layerwise noise table and a device run. It is also possible that some of the zeroed channels were dead anyway — the τ=2 Conv feeding `bnfold_conv_0` has a 7.9e10 weight spread with one channel at essentially zero, and E29 found that layer harmless, so spread alone does not imply damage.
+* **Not addressed here:** the 61 `Transpose` ops costing 151 ms (15.8 % of τ=2's runtime) that esp-ppq inserts around every SubSpectralNorm `Reshape` for the NHWC/NCHW change. Those come from the same reshape structure that causes the quantization problem, so a reformulation of SubSpectralNorm that avoids the reshape entirely would address both at once. That is a model-design change, not an export change.
+
 ---
 
 ## Planned next
