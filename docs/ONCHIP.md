@@ -29,11 +29,16 @@ Two routes for NativeKWS afterwards, neither of them this milestone:
 Choosing between those is a real research decision — note that all three published
 Mamba-on-MCU papers dodge it by keeping the recurrence in float. Do not start it here.
 
-## Already prepared for you, in `deploy/onchip/`
+## Already prepared for you, in `deploy/onchip/<model>/`
+
+One directory per model: `bcresnet-1/`, `bcresnet-2/`, `bcresnet-3/`, `bcresnet-8/`.
+Each holds the same four things, and **the files inside a directory belong together** —
+mixing an ONNX with another directory's calibration or test vectors gives a silently
+wrong result.
 
 | file | what it is |
 |---|---|
-| `bcresnet8.onnx` | the network, opset 13, fixed batch 1, input `logmel` (1,1,40,101), **BatchNorm already folded out** |
+| `<model>.onnx` | the network, opset 13, fixed batch 1, input `logmel` (1,1,40,101), **BatchNorm already folded out** |
 | `calib_128.npy` | 128 real log-mel features for int8 post-training quantization |
 | `test_vectors.h` | 4 inputs (`yes`, `no`, `stop`, `_silence_`) + the float logits the host produced |
 | `test_vectors.npz` | the same, for host-side checking |
@@ -71,28 +76,74 @@ which is 252.5 KB in int8. The ESP-DL arena asked for 391 KB; the chip had ~366 
 free at boot but a largest *contiguous* block of only 108 KB at the point of
 allocation. Weights were never the problem — they stayed in flash as intended.
 
-Largest single activation by scale, int8, for the fixed 101-frame window:
+The arena holds more than one tensor at a time. The τ=8 run measured a **391.38 KB
+arena against a 252.5 KB largest tensor, so arena ≈ 1.55 × largest tensor** under
+`MEMORY_MANAGER_GREEDY`. Applying that ratio against the 108 KB largest free block
+observed after the model loads:
 
-| model | params | largest activation | fits in ~108 KB contiguous? |
-|---|---|---|---|
-| BC-ResNet-1 | 9,232 | 31.6 KB | yes, comfortably |
-| BC-ResNet-2 | 27,284 | 63.1 KB | yes |
-| BC-ResNet-3 | 54,168 | 94.7 KB | yes, tight |
-| BC-ResNet-4 | 89,884 | 126.2 KB | no |
-| BC-ResNet-6 | 187,812 | 189.4 KB | no |
-| BC-ResNet-8 | 321,068 | 252.5 KB | no — this is what failed |
+| model | params | largest activation | arena ≈ 1.55x | fits in 108 KB? |
+|---|---|---|---|---|
+| BC-ResNet-1 | 9,232 | 31.6 KB | ~49 KB | **yes, comfortably** |
+| BC-ResNet-2 | 27,284 | 63.1 KB | ~98 KB | yes, but only 10 KB spare |
+| BC-ResNet-3 | 54,168 | 94.7 KB | ~147 KB | **no** |
+| BC-ResNet-4 | 89,884 | 126.2 KB | ~196 KB | no |
+| BC-ResNet-6 | 187,812 | 189.4 KB | ~294 KB | no |
+| BC-ResNet-8 | 321,068 | 252.5 KB | 391 KB measured | no — this is what failed |
 
-The arena must hold more than one tensor at a time, so treat these as lower bounds
-and prefer a scale with headroom. **Deploy BC-ResNet-2 first, then BC-ResNet-3.**
+**Deploy BC-ResNet-1 first** to get a green run, then try BC-ResNet-2. τ=3 and above
+need either streaming execution or a board with PSRAM. (An earlier version of this
+file said to start at τ=2 and that τ=3 was "tight"; that predated the measured 1.55x
+arena ratio and was wrong.)
 
-Export any of them with:
+**One more thing from the device log**, which the arena failure overshadowed:
+
+```
+E esp-dl: Input cap=0x804 can not callocate with MALLOC_CAP_SIMD, please try other caps.
+```
+
+ESP-DL asked for SIMD-capable memory, which the plain ESP32 has none of — the vector
+unit is an ESP32-S3 feature. On τ=8 this was moot because the arena was too big
+anyway, but it may well reappear at τ=1 with plenty of RAM free. If it does, it is a
+memory-capability configuration problem, not a size problem: check the `dl::Model`
+memory-manager arguments and ESP-DL's cap settings rather than shrinking the model
+further.
+
+**All three small scales are trained and exported**, each in its own directory with
+its own ONNX, calibration tensors and test vectors:
+
+| directory | params | float accuracy (official V2-12) |
+|---|---|---|
+| `deploy/onchip/bcresnet-1/` | 9,232 | 96.91 % |
+| `deploy/onchip/bcresnet-2/` | 27,284 | **98.02 %** |
+| `deploy/onchip/bcresnet-3/` | 54,168 | 98.32 % |
+
+(The accuracies here are measured in fp32 with no autocast, so they differ by up to
+0.05 from the best-by-validation figures in `RESULTS.md`, which are evaluated in
+bf16. Same checkpoints.)
+
+Regenerate or export another run with:
 
 ```bash
 python scripts/export_onchip.py --run runs/v2_12_bcresnet-2    # on the training machine
 ```
 
-which writes `deploy/onchip/bcresnet-2/` and prints the largest activation so the fit
-is known before anything is flashed.
+which prints the largest activation, so whether it fits is known before flashing.
+
+### Deploying BC-ResNet-2
+
+Note that `scripts/quantize_onchip.py` (on the `e26-esp32-bringup` branch) hard-codes
+`deploy/onchip/bcresnet8.onnx`, a path that no longer exists — the τ=8 export moved to
+`deploy/onchip/bcresnet-8/`, so the old default now fails loudly instead of silently
+loading the wrong model. Give it a `--src` argument pointing at the directory
+you want (its `test_vectors.npz` and `calib_128.npy` must come from the *same*
+directory as the ONNX, or the calibration and the graph will not correspond):
+
+```bash
+python scripts/quantize_onchip.py --src deploy/onchip/bcresnet-2 \
+    --out deploy/esp32_kws/main/models/bcresnet-2.espdl
+```
+
+Then rebuild with the new `test_vectors.h` from that directory and the new `.espdl`.
 
 Note what this says about the project as a whole: NativeKWS-H's whole-window peak is
 189 KB, so **the final model does not fit this chip whole-window either**. Its
@@ -115,7 +166,7 @@ optimise away — slow is fine for this milestone.
 ## Steps
 
 1. Install ESP-IDF ≥ 5.3 and export its environment. Confirm with `idf.py --version`.
-2. `pip install esp-ppq`. Quantize `bcresnet8.onnx` to int8 `.espdl`, following the
+2. `pip install esp-ppq`. Quantize the chosen `<model>.onnx` to int8 `.espdl`, following the
    ESP-DL quantization tutorial, with: target `"c"`, input shape `[1,1,40,101]`, and
    the calibration tensors from `calib_128.npy`. Read the tutorial for the current
    API rather than guessing it. Keep the quantization report it prints — if any layer

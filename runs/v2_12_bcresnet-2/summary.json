@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_bcresnet-2",
+  "params": 27284,
+  "best_by_valid": {
+    "valid": 97.52530933633295,
+    "test": 98.01635991820041,
+    "epoch": 195,
+    "which": "ema"
+  },
+  "last_test_raw": 98.05725971370143,
+  "last_test_ema": 98.01635991820041
+}

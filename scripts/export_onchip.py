@@ -167,7 +167,7 @@ def main():
             acc = 100 * correct / len(audio)
             print(f"PyTorch float accuracy on the official v2_12 test set: {acc:.2f}%")
 
-        onnx_path = f"{OUT}/bcresnet8.onnx"
+        onnx_path = f"{OUT}/{os.path.basename(OUT)}.onnx"
         torch.onnx.export(model, (torch.zeros(1, 1, 40, 101),), onnx_path,
                           input_names=["logmel"], output_names=["logits"],
                           opset_version=13, dynamo=False)
