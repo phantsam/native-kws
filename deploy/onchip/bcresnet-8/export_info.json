@@ -17,6 +17,11 @@
     "Reshape",
     "Sigmoid"
   ],
+  "ssn_equalized": true,
+  "destroyed_channels_per_tensor_int8": {
+    "before": 676,
+    "after": 51
+  },
   "largest_activation_bytes_int8": 258560,
   "weights_bytes_int8": 321068,
   "ops_missing_from_espdl_whitelist": [],

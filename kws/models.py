@@ -54,7 +54,7 @@ class BCBlock(nn.Module):
     """Broadcasted residual block: 2-D frequency-depthwise conv, frequency pooling,
     1-D temporal depthwise conv, broadcast back onto the frequency axis."""
 
-    def __init__(self, cin, cout, freq_stride, dilation, ssn_bands, dropout):
+    def __init__(self, cin, cout, freq_stride, dilation, ssn_bands, dropout, causal=False):
         super().__init__()
         self.transition = cin != cout
         f2 = []
@@ -63,9 +63,10 @@ class BCBlock(nn.Module):
         f2.append(
             conv_bn(cout, cout, (3, 1), (freq_stride, 1), groups=cout, ssn_bands=ssn_bands, act=False)
         )
-        self.f2 = nn.Sequential(*f2)
+        self.f2 = nn.Sequential(*f2)   # (3,1) touches frequency only: no look-ahead either way
         self.f1 = nn.Sequential(
-            conv_bn(cout, cout, (1, 3), groups=cout, dilation=(1, dilation), act="silu"),
+            conv_bn(cout, cout, (1, 3), groups=cout, dilation=(1, dilation), act="silu",
+                    causal=causal),
             nn.Conv2d(cout, cout, 1, bias=False),
             nn.Dropout2d(dropout),
         )
@@ -252,20 +253,26 @@ class NativeKWS(nn.Module):
 class BCResNet(nn.Module):
     """Port of the official BC-ResNet (Kim et al. 2021) for pipeline validation."""
 
-    def __init__(self, base_c=8, num_classes=12):
+    def __init__(self, base_c=8, num_classes=12, causal=False):
         super().__init__()
         c = [base_c * 2, base_c, int(base_c * 1.5), base_c * 2, int(base_c * 2.5), base_c * 4]
         n, strided = [2, 2, 4, 4], (1, 2)
-        self.stem = conv_bn(1, c[0], 5, stride=(2, 1))
+        self.causal = causal
+        self.stem = conv_bn(1, c[0], 5, stride=(2, 1), causal=causal)
         layers = []
         for idx, reps in enumerate(n):
             for i in range(reps):
                 cin = c[idx] if i == 0 else c[idx + 1]
                 s = 2 if (idx in strided and i == 0) else 1
-                layers.append(BCBlock(cin, c[idx + 1], s, dilation=2**idx, ssn_bands=5, dropout=0.1))
+                layers.append(BCBlock(cin, c[idx + 1], s, dilation=2**idx, ssn_bands=5, dropout=0.1,
+                                      causal=causal))
         self.body = nn.Sequential(*layers)
+        # the head's 5-wide temporal depthwise conv is the last place look-ahead hides
+        head_time = [nn.ZeroPad2d((4, 0, 0, 0))] if causal else []
+        head_time.append(nn.Conv2d(c[-2], c[-2], 5, groups=c[-2],
+                                   padding=(0, 0) if causal else (0, 2), bias=False))
         self.head = nn.Sequential(
-            nn.Conv2d(c[-2], c[-2], 5, groups=c[-2], padding=(0, 2), bias=False),
+            *head_time,
             nn.Conv2d(c[-2], c[-1], 1, bias=False),
             nn.BatchNorm2d(c[-1]),
             nn.ReLU(),
@@ -395,7 +402,7 @@ class BCSSMNet(nn.Module):
 def build_model(name, num_classes, **kw):
     if name.startswith("bcresnet"):
         tau = float(name.split("-")[1])
-        return BCResNet(int(tau * 8), num_classes)
+        return BCResNet(int(tau * 8), num_classes, causal=kw.get("causal", False))
     if name.startswith("bcssm"):
         tau = float(name.split("-")[1])
         keys = ("ssm_stages", "state", "causal", "noise_aware", "dropout")

@@ -438,6 +438,42 @@ The first ESP32 bring-up (E26, run on the machine with the board) got as far as 
 * **Deployment target is BC-ResNet-2**: 98.02 % at 27 K parameters — 12x smaller than τ=8 for 0.65 points, and it fits. τ=3 would add +0.34 but needs streaming execution or PSRAM.
 * **Still untested on hardware.** No on-chip prediction or latency figure exists yet for any scale.
 
+### E30: Cross-layer equalization for the SubSpectralNorm folds (2026-10-28)
+Follows E29, which was recorded on the `e26-esp32-bringup` branch.
+
+* **E27's reasoning was wrong and E29 caught it.** E27 justified rewriting the SubSpectralNorm BatchNorms as depthwise Conv on the grounds that "a Conv gets a per-output-channel quantization scale of its own, so the exponent constraint does not arise". **ESP-DL quantizes per tensor on ESP32 and ESP32-S3**; per-channel Conv exists only on P4/S31. The rewrite still helped (τ=8 `stop` margin 2.0 → 4.25, E29), so the conclusion held while the premise did not — the depthwise Conv removed the `Mul` exponent *rule* violation but left the underlying problem, which is the channel-scale spread itself.
+* **The actual problem.** With one power-of-two exponent per tensor, a fold whose channel scales span three orders of magnitude loses its small channels entirely. E29 measured τ=2 `bnfold_conv_0` at 581× spread, 39/80 channels zeroed, 81.9 % layerwise noise, and `no` misclassified as `_unknown_`.
+* **Fix: exact cross-layer equalization in the export.** The reshape in front of a fold maps Conv output channel `k` to fold channels `k*S … k*S+S-1`, so scaling the Conv's channel `k` (weights *and* bias) by `g[k]` while dividing those `S` fold channels by `g[k]` is an **exact identity**. The unusual part is that the fold is per-(channel, sub-band) while the Conv is only per-channel, so `g` can carry only the across-channel part of the spread; the within-sub-band residual stays.
+* **Per-layer damping, selected automatically.** `g` is the geometric mean over sub-bands raised to `alpha`, with `alpha` chosen per layer from {0.25, 0.5, 0.75, 1.0} to minimise the number of destroyed channels across the *pair*. This matters: moving the full spread fixes the fold but inflates the Conv feeding it, and a blanket `alpha = 1` made τ=1 `bnfold_conv_10` **worse** (spread 2792× → 3300×, zeroed 6 → 8). A layer is rewritten only if some `alpha` strictly helps, and only if the Conv's output has no second consumer — otherwise rescaling it would corrupt a residual branch. Three layers in τ=1 and τ=3 are left untouched on that basis.
+* **Result.** Channels left with ≤2 quantization levels under a single per-tensor scale:
+
+| model | destroyed channels | worst layer | float logits vs PyTorch |
+|---|---|---|---|
+| BC-ResNet-1 | 87 → **40** | — | 3.8e-06, argmax unchanged |
+| BC-ResNet-2 | 249 → **74** | `bnfold_conv_0` 72 → **1** | 2.4e-06, argmax unchanged |
+| BC-ResNet-3 | 324 → **56** | `bnfold_conv_1` 78 → **4** | 3.8e-06, argmax unchanged |
+| BC-ResNet-8 | 676 → **51** | `bnfold_conv_0` 123 → **3** | 9.5e-06, argmax unchanged |
+
+* **Caveat, stated plainly:** destroyed-channel count is a *screening* metric chosen because it predicts the observed failure, not a measurement of accuracy. Whether τ=2 now gets 4/4 has to be settled by esp-ppq's layerwise noise table and a device run. It is also possible that some of the zeroed channels were dead anyway — the τ=2 Conv feeding `bnfold_conv_0` has a 7.9e10 weight spread with one channel at essentially zero, and E29 found that layer harmless, so spread alone does not imply damage.
+* **Not addressed here:** the 61 `Transpose` ops costing 151 ms (15.8 % of τ=2's runtime) that esp-ppq inserts around every SubSpectralNorm `Reshape` for the NHWC/NCHW change. Those come from the same reshape structure that causes the quantization problem, so a reformulation of SubSpectralNorm that avoids the reshape entirely would address both at once. That is a model-design change, not an export change.
+
+### E31: Causal BC-ResNet, and what streaming would buy on the base ESP32 (2026-10-28)
+* **Context:** no ESP32-S3 is available, so everything has to work on the plain ESP32. Re-examining the plan under that constraint shows the S3 was never required — and that the base chip is the *better* platform for the streaming claim, because its limits actually bind.
+* **Causal plumbing added.** `BCResNet(causal=True)` and `BCBlock(causal=True)` put left-only time padding on the stem (5 wide in time), every `f1` temporal conv, and the head's 5-wide temporal depthwise conv. Verified: parameter counts identical to non-causal (9,232 / 27,284 / 321,068 — only padding differs); the non-causal path is untouched, with existing checkpoints loading and reproducing stored logits to 2.9e-06; and **zero look-ahead** — randomising frames ≥60 leaves every feature column before 60 bit-identical, where the non-causal model leaks back 12 frames (120 ms).
+* **Streaming memory, computed from the graph.** BC-ResNet's temporal conv `f1` operates on the frequency-averaged signal (`x.mean(dim=2)`), so a layer's retained history is `C x 2*dilation` values rather than `C x F x 2*dilation`. Peak = total history + a double-buffered working column:
+
+| model | whole-window | streaming | reduction | fits 108 KB |
+|---|---|---|---|---|
+| BC-ResNet-1 | 31.6 KB | **3.0 KB** | 10x | both |
+| BC-ResNet-2 | 63.1 KB | **5.9 KB** | 11x | both |
+| BC-ResNet-3 | 94.7 KB | **8.8 KB** | 11x | streaming only |
+| BC-ResNet-8 | 252.5 KB (391 KB arena measured) | **23.3 KB** | 11x | streaming only |
+
+* **The headline this gives us:** streaming puts **BC-ResNet-8 (98.67 %) on a plain ESP32 that cannot hold it whole-window at any quantization setting** — 391 KB requested against a 108 KB largest free block, versus 23.3 KB streamed. That is a stronger result than demonstrating it on an S3 with PSRAM, where nothing would have been binding.
+* **Latency is a separate constraint and streaming does not resolve it at every scale.** From τ=2's measured whole-window throughput (7.32 M MACs in 949 ms = 7.7 MMAC/s): streamed per-frame cost is ~3.2 ms for τ=1, ~9.4 ms for τ=2, ~18.7 ms for τ=3, ~110 ms for τ=8, against a 10 ms frame budget. So τ=1 streams comfortably in real time, τ=2 is borderline with no headroom for the log-mel front-end, and τ=8 fits in memory but not in time. **These are estimates:** they extrapolate a throughput that includes the 16 % Transpose tax, and streaming will be *less* efficient per MAC because tiny per-call tensors give worse locality and more fixed overhead. Measuring this is the next device task.
+* **Training started:** causal `bcresnet-1/2/3/8` on v2_12, official SGD recipe, so the accuracy cost of losing look-ahead is measured rather than assumed.
+* **Correction to earlier advice.** E29's and `ONCHIP.md`'s suggestion that an ESP32-S3 is "required for the deployment phase" was wrong as stated. The S3 buys ~7x speed and a PSRAM option; it does not fix per-tensor quantization (ESP32 and S3 are both per-tensor; per-channel Conv exists only on P4/S31), and it is not needed for the streaming contribution, which the base chip demonstrates more convincingly.
+
 ---
 
 ### E29: BC-ResNet-2 runs on the ESP32 — 949 ms, bit-exact with esp-ppq, 3/4 correct; τ=3 does not fit (2026-10-28)

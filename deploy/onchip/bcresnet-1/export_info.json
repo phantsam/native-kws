@@ -2,7 +2,7 @@
   "source_run": "runs/v2_12_bcresnet-1",
   "ckpt": "best.pt",
   "params": 9232,
-  "float_test_accuracy_v2_12": 96.91,
+  "float_test_accuracy_v2_12": -1.0,
   "opset": 13,
   "input": "logmel (1,1,40,101) float32, 40 mel bands, 30 ms window, 10 ms hop",
   "batchnorm_folded": "depthwise_conv",
@@ -17,6 +17,11 @@
     "Reshape",
     "Sigmoid"
   ],
+  "ssn_equalized": true,
+  "destroyed_channels_per_tensor_int8": {
+    "before": 87,
+    "after": 40
+  },
   "largest_activation_bytes_int8": 32320,
   "weights_bytes_int8": 9232,
   "ops_missing_from_espdl_whitelist": [],

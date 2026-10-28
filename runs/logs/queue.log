@@ -41,3 +41,8 @@
 2026-10-28 13:49:29 launched v2_12_bcresnet-2 on GPU 0: --task v2_12 --model bcresnet-2 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
 2026-10-28 13:49:29 launched v2_12_bcresnet-3 on GPU 0: --task v2_12 --model bcresnet-3 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
 2026-10-28 14:38:32 queue empty, exiting
+2026-10-28 16:24:45 queue start: /home/prjgnn/native-kws/jobs/causal.txt slots={'0': 4}
+2026-10-28 16:24:45 launched v2_12_bcresnet-1-causal on GPU 0: --task v2_12 --model bcresnet-1 --causal --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
+2026-10-28 16:24:45 launched v2_12_bcresnet-2-causal on GPU 0: --task v2_12 --model bcresnet-2 --causal --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
+2026-10-28 16:24:45 launched v2_12_bcresnet-3-causal on GPU 0: --task v2_12 --model bcresnet-3 --causal --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
+2026-10-28 16:24:45 launched v2_12_bcresnet-8-causal on GPU 0: --task v2_12 --model bcresnet-8 --causal --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
