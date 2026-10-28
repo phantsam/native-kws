@@ -19,12 +19,21 @@ Also explored (see `docs/`): BC-SSM (selective SSM inside the BC-ResNet broadcas
 
 V2-12 and V2-35 beat the best published from-scratch result (Keyword Mamba) by more than one standard deviation, with 17x fewer parameters. Caveats (details in `docs/EXPERIMENTS.md`, E6, E19, E21): distillation is not used by the published baselines; on V1-12 the result depends on the test-set protocol (97.95 on the testing_list protocol used by Keyword Mamba); the noise-robustness gains are not consistent at −5 dB SNR.
 
+## Hardware bring-up
+
+`HANDOFF.md` is a self-contained brief for whoever (or whatever) runs this on the
+machine the ESP32 is plugged into: wiring, `arduino-cli` flashing, the verification
+command, a failure-decode table, and the rules that keep the recorded set valid. A
+trained checkpoint is committed at `deploy/v2_12_native-H-nass-kdens/`, so that
+machine needs no GPU and no dataset.
+
 ## Documentation
 * [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): all models, equations, design rationale, novelty assessment
 * [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md): chronological experiment log (hypothesis, command, result, decision)
 * [`docs/RESULTS.md`](docs/RESULTS.md): auto-generated results tables (`python scripts/collect_results.py`)
 * [`docs/LITERATURE.md`](docs/LITERATURE.md): literature notes behind the design decisions, with provenance tags and an explicit scope caveat (not a systematic review)
 * [`docs/DATASET.md`](docs/DATASET.md): protocol for the real-microphone (INMP441) test set — replay design, condition grid, pre-registered validity rules
+* [`HANDOFF.md`](HANDOFF.md): hardware bring-up brief for the machine with the board attached
 
 ## Real-microphone test set
 
