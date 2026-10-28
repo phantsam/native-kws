@@ -1,0 +1,14 @@
+{
+  "source_run": "runs/v2_12_bcresnet-8",
+  "ckpt": "best.pt",
+  "params": 321068,
+  "float_test_accuracy_v2_12": 98.69,
+  "opset": 13,
+  "input": "logmel (1,1,40,101) float32, 40 mel bands, 30 ms window, 10 ms hop",
+  "test_vector_sources": [
+    "yes/fb7eb481_nohash_2.wav",
+    "no/563aa4e6_nohash_4.wav",
+    "stop/7add4c5f_nohash_1.wav",
+    "_silence_/3471.wav"
+  ]
+}

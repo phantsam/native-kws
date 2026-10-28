@@ -5,8 +5,14 @@ model, the training pipeline and the recording tools already exist and are teste
 software. Nothing has ever run on the hardware. Your job is the first hardware
 bring-up, and then data collection.
 
-Read this file, then `rig/README.md`, then `docs/DATASET.md` §Procedure. Do not start
-by reading the training code; you do not need it.
+> **Current task is NOT the microphone.** Microphone and recording work is deferred.
+> Start with **[`docs/ONCHIP.md`](docs/ONCHIP.md)**: get the network running on the
+> ESP32 from inputs baked into flash, with no microphone involved. Everything needed
+> is already committed in `deploy/onchip/`. The rest of this file (§2 hardware, §3
+> setup, §4 flashing basics) is still the right background; §5–§7 are for later.
+
+Read this file, then `docs/ONCHIP.md`. Do not start by reading the training code;
+you do not need it.
 
 ---
 

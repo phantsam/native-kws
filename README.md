@@ -34,6 +34,7 @@ machine needs no GPU and no dataset.
 * [`docs/LITERATURE.md`](docs/LITERATURE.md): literature notes behind the design decisions, with provenance tags and an explicit scope caveat (not a systematic review)
 * [`docs/DATASET.md`](docs/DATASET.md): protocol for the real-microphone (INMP441) test set — replay design, condition grid, pre-registered validity rules
 * [`HANDOFF.md`](HANDOFF.md): hardware bring-up brief for the machine with the board attached
+* [`docs/ONCHIP.md`](docs/ONCHIP.md): milestone 1 on the ESP32 — run the network from flashed inputs, no microphone
 
 ## Real-microphone test set
 
