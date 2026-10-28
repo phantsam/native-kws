@@ -91,6 +91,14 @@ Verified exact: all four graphs still match PyTorch to ≤1e-5 with unchanged ar
 This is a screening metric, not an accuracy measurement — esp-ppq's layerwise noise
 table is the real check, so re-quantize and compare before trusting it.
 
+**Moving to an ESP32-S3 would not remove this problem.** From ESP-DL's quantization
+guide: ESP32 and **ESP32-S3 are both per-tensor**; per-channel `Conv`/`GEMM` exists
+only on **ESP32-P4 and ESP32-S31**. So the S3 buys roughly 7x speed and a PSRAM
+option — it fixes the latency and memory walls — while the channel-scale spread stays
+exactly as it is. That is also why the equalization above is worth having rather than
+waiting for better silicon: per-tensor covers ESP32, ESP32-S3 and ESP32-C3, which is
+most of the installed base.
+
 Verified: operators are `Add, Conv, Flatten, GlobalAveragePool, Mul, ReduceMean,
 Relu, Reshape, Sigmoid`, **all whitelisted** (the remaining `Mul`s are the
 architecture's own SiLU, `x*sigmoid(x)`, which quantized without complaint); the
