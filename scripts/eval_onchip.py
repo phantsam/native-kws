@@ -52,8 +52,8 @@ def main():
         print(f"resuming: {len(done)} clips already measured")
 
     ser = serial.Serial(a.port, a.baud, timeout=30)
+    wait_ready(ser)
     ser.reset_input_buffer()
-    time.sleep(0.3)
     t0 = time.time()
     try:
         for i in range(n):
@@ -102,6 +102,24 @@ def main():
     print("top confusions:", ", ".join(f"{m} x{c}" for m, c in
                                        sorted(err.items(), key=lambda x: -x[1])[:8]) or "none")
     print(f"\nwrote {a.out}")
+
+
+def wait_ready(ser, secs=10.0):
+    """Opening the port resets most dev boards (DTR/RTS auto-reset), and whatever is sent
+    while the firmware boots is lost. Wait for its "ready" line; carry on without it in
+    case this board does not reset on open."""
+    timeout, ser.timeout = ser.timeout, 0.5
+    t = time.time()
+    try:
+        while time.time() - t < secs:
+            line = ser.readline()
+            if b"ready" in line:
+                print(line[line.index(b"I ("):].decode("ascii", "replace").strip()
+                      if b"I (" in line else "device ready")
+                return
+    finally:
+        ser.timeout = timeout
+    print("no 'ready' line from the device; assuming it was already running")
 
 
 def save(path, features, labels, done, label, host_pred, index):
