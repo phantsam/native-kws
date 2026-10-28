@@ -32,7 +32,7 @@ Mamba-on-MCU papers dodge it by keeping the recurrence in float. Do not start it
 
 | file | what it is |
 |---|---|
-| `bcresnet8.onnx` | the network, opset 13, fixed batch 1, input `logmel` (1,1,40,101) |
+| `bcresnet8.onnx` | the network, opset 13, fixed batch 1, input `logmel` (1,1,40,101), **BatchNorm already folded out** |
 | `calib_128.npy` | 128 real log-mel features for int8 post-training quantization |
 | `test_vectors.h` | 4 inputs (`yes`, `no`, `stop`, `_silence_`) + the float logits the host produced |
 | `test_vectors.npz` | the same, for host-side checking |
@@ -40,6 +40,16 @@ Mamba-on-MCU papers dodge it by keeping the recurrence in float. Do not start it
 
 Regenerate with `python scripts/export_onchip.py` (needs the dataset cache, so that
 runs on the training machine).
+
+**The graph is already ESP-DL-clean — do not "fix" it.** A plain PyTorch export
+contains `BatchNormalization`, which ESP-DL has no operator for. The export script
+removes all of it: onnxsim folds what sits behind a Conv, and the 12 that survive
+(BC-ResNet's SubSpectralNorm normalises a *reshaped* tensor, so its BN is not
+directly behind a Conv) are rewritten as the per-channel affine they already are at
+inference, which is a whitelisted `Mul` + `Add`. Verified: the operator set is
+`Add, Conv, Flatten, GlobalAveragePool, Mul, ReduceMean, Relu, Reshape, Sigmoid`,
+**every one on the whitelist**; the folded graph matches PyTorch to 3.8e-06 and
+scores the same 98.69 % over the full official test set.
 
 ## Toolchain
 
