@@ -2,10 +2,10 @@
   "source_run": "runs/v2_12_bcresnet-8",
   "ckpt": "best.pt",
   "params": 321068,
-  "float_test_accuracy_v2_12": 98.69,
+  "float_test_accuracy_v2_12": -1.0,
   "opset": 13,
   "input": "logmel (1,1,40,101) float32, 40 mel bands, 30 ms window, 10 ms hop",
-  "batchnorm_folded": true,
+  "batchnorm_folded": "depthwise_conv",
   "onnx_ops": [
     "Add",
     "Conv",
@@ -17,6 +17,8 @@
     "Reshape",
     "Sigmoid"
   ],
+  "largest_activation_bytes_int8": 258560,
+  "weights_bytes_int8": 321068,
   "ops_missing_from_espdl_whitelist": [],
   "test_vector_sources": [
     "yes/022cd682_nohash_0.wav",

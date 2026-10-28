@@ -10,8 +10,9 @@ milestone answers one question: **does our network run correctly on this chip.**
 
 ## What to deploy, and why it is not our best model
 
-Deploy **BC-ResNet-8** (321,068 parameters, 98.69 % on the official V2-12 test set),
-not NativeKWS-H.
+Deploy a **small BC-ResNet scale** — BC-ResNet-2 or BC-ResNet-3 — not BC-ResNet-8
+and not NativeKWS-H. BC-ResNet-8 (98.69 %) was the first attempt and does not fit;
+see "Which model actually fits" below.
 
 NativeKWS-H is the better model (99.02 %) but it contains a *selective scan*, a
 sequential recurrence, and **ESP-DL has no scan or cumsum operator** — verified from
@@ -45,11 +46,60 @@ runs on the training machine).
 contains `BatchNormalization`, which ESP-DL has no operator for. The export script
 removes all of it: onnxsim folds what sits behind a Conv, and the 12 that survive
 (BC-ResNet's SubSpectralNorm normalises a *reshaped* tensor, so its BN is not
-directly behind a Conv) are rewritten as the per-channel affine they already are at
-inference, which is a whitelisted `Mul` + `Add`. Verified: the operator set is
-`Add, Conv, Flatten, GlobalAveragePool, Mul, ReduceMean, Relu, Reshape, Sigmoid`,
-**every one on the whitelist**; the folded graph matches PyTorch to 3.8e-06 and
-scores the same 98.69 % over the full official test set.
+directly behind a Conv) become **depthwise `Conv` nodes with kernel 1**, carrying the
+same affine in weights and bias.
+
+Those 12 were first written as `Mul` + `Add`, which is mathematically identical and
+also whitelisted — and it was wrong. ESP-DL's int8 `Mul` requires
+`output_exponent - input0_exponent - input1_exponent >= 0`, and the small
+SubSpectralNorm scales violate it, so the deployment check rejected 5 nodes
+(`bnfold_mul_0/1/2/10/11`) and the on-chip result would have been silently wrong
+while esp-ppq's PC simulation still looked correct. A depthwise `Conv` gets a
+per-output-channel scale of its own, so the constraint does not arise. Reported from
+the device by the first bring-up run; see `docs/EXPERIMENTS.md` E26.
+
+Verified: operators are `Add, Conv, Flatten, GlobalAveragePool, Mul, ReduceMean,
+Relu, Reshape, Sigmoid`, **all whitelisted** (the remaining `Mul`s are the
+architecture's own SiLU, `x*sigmoid(x)`, which quantized without complaint); the
+rewritten graph matches PyTorch to 1.1e-05.
+
+## Which model actually fits
+
+**BC-ResNet-8 does not fit on an ESP32 without PSRAM, and no quantization setting
+changes that.** Its largest single activation is the stem output `[1,128,20,101]`,
+which is 252.5 KB in int8. The ESP-DL arena asked for 391 KB; the chip had ~366 KB
+free at boot but a largest *contiguous* block of only 108 KB at the point of
+allocation. Weights were never the problem — they stayed in flash as intended.
+
+Largest single activation by scale, int8, for the fixed 101-frame window:
+
+| model | params | largest activation | fits in ~108 KB contiguous? |
+|---|---|---|---|
+| BC-ResNet-1 | 9,232 | 31.6 KB | yes, comfortably |
+| BC-ResNet-2 | 27,284 | 63.1 KB | yes |
+| BC-ResNet-3 | 54,168 | 94.7 KB | yes, tight |
+| BC-ResNet-4 | 89,884 | 126.2 KB | no |
+| BC-ResNet-6 | 187,812 | 189.4 KB | no |
+| BC-ResNet-8 | 321,068 | 252.5 KB | no — this is what failed |
+
+The arena must hold more than one tensor at a time, so treat these as lower bounds
+and prefer a scale with headroom. **Deploy BC-ResNet-2 first, then BC-ResNet-3.**
+
+Export any of them with:
+
+```bash
+python scripts/export_onchip.py --run runs/v2_12_bcresnet-2    # on the training machine
+```
+
+which writes `deploy/onchip/bcresnet-2/` and prints the largest activation so the fit
+is known before anything is flashed.
+
+Note what this says about the project as a whole: NativeKWS-H's whole-window peak is
+189 KB, so **the final model does not fit this chip whole-window either**. Its
+streaming peak is ~24 KB. That gap is not an accident of this board — it is the
+open problem recorded in `docs/LITERATURE.md` §11, that no MCU toolchain plans
+streaming execution and every one of them is whole-window. Reaching it by hand here
+is the contribution, not a workaround.
 
 ## Toolchain
 

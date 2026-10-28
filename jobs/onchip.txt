@@ -1,0 +1,5 @@
+# Small BC-ResNet scales that fit the ESP32's contiguous-RAM limit (see docs/ONCHIP.md).
+# Official BC-ResNet SGD recipe, same as the tau=8 reference, so the scales are comparable.
+v2_12_bcresnet-1 --task v2_12 --model bcresnet-1 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
+v2_12_bcresnet-2 --task v2_12 --model bcresnet-2 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
+v2_12_bcresnet-3 --task v2_12 --model bcresnet-3 --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0

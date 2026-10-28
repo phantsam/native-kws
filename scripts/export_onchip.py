@@ -12,6 +12,7 @@ already are at inference time, which is a whitelisted Mul plus Add.
 
 usage: python scripts/export_onchip.py
 """
+import argparse
 import json
 import os
 
@@ -23,9 +24,7 @@ from onnx import helper, numpy_helper
 from kws.data import LogMel
 from kws.train import load_run
 
-OUT = "deploy/onchip"
-RUN = "runs/v2_12_bcresnet-8"
-CKPT = "best.pt"
+DEFAULT_RUN = "runs/v2_12_bcresnet-8"
 LABELS12 = ["_silence_", "_unknown_", "down", "go", "left", "no", "off", "on", "right", "stop",
             "up", "yes"]
 # ESP-DL int8 operators for ESP32/ESP32-S3, from Espressif's operator support table
@@ -40,8 +39,22 @@ ESPDL_OPS = {
 }
 
 
-def bn_to_mul_add(model):
-    """Rewrite every surviving BatchNormalization as Mul + Add (inference-time affine)."""
+def bn_to_depthwise_conv(model):
+    """Rewrite every surviving BatchNormalization as a depthwise Conv with kernel 1.
+
+    A per-channel affine is also expressible as Mul + Add, and that was the first
+    attempt -- but ESP-DL's int8 Mul requires
+    (output_exponent - input0_exponent - input1_exponent) >= 0, and the small
+    SubSpectralNorm scales violate it, so the deployment check rejected 5 nodes and
+    the on-chip result would have been wrong while esp-ppq's PC simulation still
+    looked fine. A depthwise Conv carries the same affine in weights and bias, which
+    ESP-DL quantizes per output channel with its own scale, so the constraint does
+    not arise.
+
+    Rank 4 becomes a 1x1 Conv, rank 3 a length-1 Conv-1D; both are whitelisted, and
+    groups == in_channels keeps them depthwise, which is the only grouping ESP-DL
+    supports besides 1.
+    """
     model = onnx.shape_inference.infer_shapes(model)
     g = model.graph
     init = {i.name: numpy_helper.to_array(i) for i in g.initializer}
@@ -54,22 +67,25 @@ def bn_to_mul_add(model):
             continue
         x, s_n, b_n, m_n, v_n = node.input[:5]
         eps = next((a.f for a in node.attribute if a.name == "epsilon"), 1e-5)
-        scale = init[s_n] / np.sqrt(init[v_n] + eps)
-        shift = init[b_n] - init[m_n] * scale
-        shape = [1] * rank.get(x, 4)
-        shape[1] = scale.shape[0]
-        sc = numpy_helper.from_array(scale.reshape(shape).astype(np.float32), f"bnfold_s_{n}")
-        sh = numpy_helper.from_array(shift.reshape(shape).astype(np.float32), f"bnfold_b_{n}")
-        mid = f"bnfold_mid_{n}"
-        new_init += [sc, sh]
-        nodes.append(helper.make_node("Mul", [x, sc.name], [mid], name=f"bnfold_mul_{n}"))
-        nodes.append(helper.make_node("Add", [mid, sh.name], [node.output[0]],
-                                      name=f"bnfold_add_{n}"))
+        scale = (init[s_n] / np.sqrt(init[v_n] + eps)).astype(np.float32)
+        shift = (init[b_n] - init[m_n] * scale).astype(np.float32)
+        c = scale.shape[0]
+        r = rank.get(x)
+        if r not in (3, 4):
+            raise RuntimeError(f"BatchNormalization on rank {r} tensor {x}; expected 3 or 4")
+        spatial = r - 2
+        w = numpy_helper.from_array(scale.reshape([c, 1] + [1] * spatial), f"bnfold_w_{n}")
+        b = numpy_helper.from_array(shift, f"bnfold_b_{n}")
+        new_init += [w, b]
+        nodes.append(helper.make_node(
+            "Conv", [x, w.name, b.name], [node.output[0]], name=f"bnfold_conv_{n}",
+            group=c, kernel_shape=[1] * spatial, strides=[1] * spatial,
+            pads=[0] * (2 * spatial), dilations=[1] * spatial))
         n += 1
     del g.node[:]
     g.node.extend(nodes)
     g.initializer.extend(new_init)
-    print(f"  rewrote {n} BatchNormalization node(s) as Mul+Add")
+    print(f"  rewrote {n} BatchNormalization node(s) as depthwise Conv")
     return model
 
 
@@ -89,7 +105,7 @@ def make_espdl_ready(path):
     import onnxsim
     m, ok = onnxsim.simplify(m)
     print(f"  onnxsim: {'ok' if ok else 'CHECK FAILED'}")
-    m = strip_unused_initializers(bn_to_mul_add(m))
+    m = strip_unused_initializers(bn_to_depthwise_conv(m))
     m = onnx.shape_inference.infer_shapes(m)
     onnx.checker.check_model(m)
     onnx.save(m, path)
@@ -101,7 +117,32 @@ def make_espdl_ready(path):
     return after, missing
 
 
+def largest_activation(model):
+    """Biggest single intermediate tensor, in int8 bytes: what the arena must hold."""
+    peak, hooks = {}, []
+    def mk(name):
+        def hook(_m, _i, o):
+            if isinstance(o, torch.Tensor):
+                peak[name] = max(peak.get(name, 0), o.numel())
+        return hook
+    for name, mod in model.named_modules():
+        hooks.append(mod.register_forward_hook(mk(name)))
+    with torch.no_grad():
+        model(torch.zeros(1, 1, 40, 101))
+    for h in hooks:
+        h.remove()
+    return max(peak.values())
+
+
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--run", default=DEFAULT_RUN)
+    ap.add_argument("--out", default=None, help="default: deploy/onchip/<model name>")
+    ap.add_argument("--ckpt", default="best.pt")
+    ap.add_argument("--no_acc", action="store_true", help="skip the full test-set accuracy pass")
+    a = ap.parse_args()
+    RUN, CKPT = a.run, a.ckpt
+    OUT = a.out or f"deploy/onchip/{json.load(open(os.path.join(RUN, 'args.json')))['model']}"
     os.makedirs(OUT, exist_ok=True)
     dev = torch.device("cpu")
     torch.set_num_threads(4)
@@ -113,11 +154,18 @@ def main():
     d = torch.load("cache/gsc_v2_test12.pt")
     audio, names = d["audio"], d["class_name"]
     y = torch.tensor([LABELS12.index(c) for c in names])
+    act = largest_activation(model)
+    print(f"largest single activation: {act / 1024:.1f} KB int8 "
+          f"(the ESP-DL arena must hold this contiguously)")
     with torch.no_grad():
-        correct = sum((model(fe(audio[i : i + 512].float() / 32768.0)).argmax(-1)
-                       == y[i : i + 512]).sum().item() for i in range(0, len(audio), 512))
-        acc = 100 * correct / len(audio)
-        print(f"PyTorch float accuracy on the official v2_12 test set: {acc:.2f}%")
+        if a.no_acc:
+            acc = -1.0
+            print("skipping the accuracy pass (--no_acc)")
+        else:
+            correct = sum((model(fe(audio[i : i + 512].float() / 32768.0)).argmax(-1)
+                           == y[i : i + 512]).sum().item() for i in range(0, len(audio), 512))
+            acc = 100 * correct / len(audio)
+            print(f"PyTorch float accuracy on the official v2_12 test set: {acc:.2f}%")
 
         onnx_path = f"{OUT}/bcresnet8.onnx"
         torch.onnx.export(model, (torch.zeros(1, 1, 40, 101),), onnx_path,
@@ -171,7 +219,9 @@ def main():
         json.dump({"source_run": RUN, "ckpt": CKPT, "params": n_par,
                    "float_test_accuracy_v2_12": round(acc, 2), "opset": 13,
                    "input": "logmel (1,1,40,101) float32, 40 mel bands, 30 ms window, 10 ms hop",
-                   "batchnorm_folded": True, "onnx_ops": ops,
+                   "batchnorm_folded": "depthwise_conv", "onnx_ops": ops,
+                   "largest_activation_bytes_int8": int(act),
+                   "weights_bytes_int8": int(n_par),
                    "ops_missing_from_espdl_whitelist": missing,
                    "test_vector_sources": srcs}, f, indent=2)
     print("wrote export_info.json")

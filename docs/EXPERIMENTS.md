@@ -387,6 +387,30 @@ Everything consulted during the project, with provenance tags ([V] source opened
 * **Expectations recorded in `docs/DATASET.md`:** only the ten keywords exist (anything else is correctly `_unknown_`), and GSC is predominantly American-accented English, so an accent gap is expected — and is one of the few effects a small live set can honestly demonstrate, being large where a half-point benchmark difference is not. Privacy rules for set B added (consent, anonymous ids, audio stays out of the repo).
 * **Still unverified:** everything that needs the physical board — I2S bit alignment and slot selection, real UART throughput, and whether a small loudspeaker reproduces the sweep well enough to anchor each segment.
 
+### E27: Two fixes from the first device bring-up (2026-10-28)
+The first ESP32 bring-up (E26, run on the machine with the board) got as far as a flashed, quantized BC-ResNet-8 and then failed to run. Both causes were on the training/export side, so both are fixed here.
+
+**Fix 1 — the BatchNorm rewrite was the wrong primitive.** E24's export wrote the 12 surviving SubSpectralNorm BatchNorms as `Mul` + `Add`. Mathematically identical, whitelisted, and verified against PyTorch to 1.1e-05 — and wrong on device. ESP-DL's int8 `Mul` requires `output_exponent - input0_exponent - input1_exponent >= 0`; the small SubSpectralNorm scales violate it, and the deployment check rejected 5 nodes (`bnfold_mul_0/1/2/10/11`). The dangerous part is that **esp-ppq's PC simulation showed no problem** — all 4 test vectors still predicted correctly there — so this would have shipped as a silent numerical fault.
+* Now rewritten as **depthwise `Conv` with kernel 1** (`group == in_channels`, the only grouping ESP-DL supports besides 1), carrying the affine in weights and bias. A Conv gets a per-output-channel quantization scale of its own, so the exponent constraint does not arise. Verified: 12 nodes converted, operator set all-whitelisted, logits match PyTorch to 1.1e-05, predictions unchanged.
+* The surviving `Mul` nodes are the architecture's own SiLU (`x*sigmoid(x)`) and were not flagged by the device check. If they ever are, ESP-DL has a `Swish` operator to fuse them into.
+* **Testable prediction for the next device run:** E26 measured accumulated quantization noise reaching 58 % in the last block and the `stop` margin collapsing from 9.8 (float) to 2.0 (int8), and found that forcing those 5 `Mul`s to int16 made it *worse* (error moved to `bnfold_mul_9`, `stop` then misclassified as `_silence_`). That pattern is what a badly-scaled primitive looks like, so the depthwise-Conv version should show a noticeably larger margin. If it does not, the noise has another source and the SiLU `Mul`s are the next suspect.
+
+**Fix 2 — BC-ResNet-8 cannot fit this chip, and the reason generalises.** The failure was the activation arena, not the weights (which stayed in flash as designed): the stem output `[1,128,20,101]` is 252.5 KB in int8 alone, ESP-DL asked for a 391 KB arena, and the board (ESP32-D0WDQ6, no PSRAM) had ~366 KB free but a largest *contiguous* block of 108 KB. Largest single activation by scale, computed on the training machine:
+
+| model | params | largest activation (int8) | fits ~108 KB contiguous |
+|---|---|---|---|
+| BC-ResNet-1 | 9,232 | 31.6 KB | yes, comfortably |
+| BC-ResNet-2 | 27,284 | 63.1 KB | yes |
+| BC-ResNet-3 | 54,168 | 94.7 KB | yes, tight |
+| BC-ResNet-4 | 89,884 | 126.2 KB | no |
+| BC-ResNet-8 | 321,068 | 252.5 KB | **no — this is what failed** |
+
+* **Started training `bcresnet-1`, `bcresnet-2`, `bcresnet-3` on v2_12** with the official BC-ResNet SGD recipe, so the scales are directly comparable to our τ=8 reference. This was already item 4 of "Planned next"; the device just made it urgent. Deploy τ=2 first, then τ=3.
+* `scripts/export_onchip.py` now takes `--run`, writes to `deploy/onchip/<model>/`, and prints the largest activation, so whether a model fits is known before anything is flashed.
+* **The important consequence:** NativeKWS-H's whole-window peak is 189 KB, so *the final model does not fit this chip whole-window either*, at any quantization setting. Its streaming peak is ~24 KB. The gap between those two numbers is exactly the open problem recorded in `docs/LITERATURE.md` §11 — every MCU toolchain surveyed is whole-window and none plans streaming execution. On this board that stops being a literature observation and becomes the thing that has to be built.
+
+**Not fixed, noted:** the board was initially invisible on USB (no CP210x/CH340/FTDI enumeration at all) and later worked; cause unknown. ESP-IDF v5.4.2 will not install from Git Bash (MSYS unsupported) — use PowerShell. Automatic flash-mode entry intermittently fails with `Wrong boot mode (0x13)`; retrying always worked, so the BOOT button was never needed.
+
 ---
 
 ## Planned next
