@@ -331,3 +331,63 @@ replies with the host float prediction: accuracy came back identical to the host
 float accuracy with **0 disagreements over 120 clips**, which confirms the indices,
 framing, parsing and tallying all line up. `--resume` was tested by stopping at 60
 clips and continuing to 120. Not yet verified against the real firmware.
+
+
+---
+
+# Milestone 3: streaming execution — the reason no ESP32-S3 is needed
+
+Whole-window inference recomputes the entire 101-frame activation map for every
+decision. Streaming keeps a small ring buffer per temporal layer and computes only
+the new time column. The structure of BC-ResNet makes this unusually cheap: its
+temporal convolution `f1` runs on the **frequency-averaged** signal
+(`x.mean(dim=2)`), so the history a layer must retain is `C x 2*dilation` values, not
+`C x F x 2*dilation`.
+
+Computed from the graph (`causal=True`, history = `(k_t - 1) * dilation` input columns
+per temporal conv, peak = history + a double-buffered working column):
+
+| model | params | accuracy | whole-window | streaming | reduction | fits 108 KB? |
+|---|---|---|---|---|---|---|
+| BC-ResNet-1 | 9,232 | 96.81 % | 31.6 KB | **3.0 KB** | 10x | both |
+| BC-ResNet-2 | 27,284 | 98.02 % | 63.1 KB | **5.9 KB** | 11x | both |
+| BC-ResNet-3 | 54,168 | 98.36 % | 94.7 KB | **8.8 KB** | 11x | streaming only |
+| BC-ResNet-4 | 89,884 | — | 126.2 KB | **11.7 KB** | 11x | streaming only |
+| BC-ResNet-6 | 187,812 | — | 189.4 KB | **17.5 KB** | 11x | streaming only |
+| BC-ResNet-8 | 321,068 | 98.67 % | 252.5 KB (391 KB arena) | **23.3 KB** | 11x | streaming only |
+
+**Streaming puts BC-ResNet-8 on a plain ESP32, which cannot hold it whole-window at
+any quantization setting.** That is a stronger demonstration than running it on an
+ESP32-S3 with PSRAM, because here the constraint actually binds: 391 KB requested
+against a 108 KB largest free block, versus 23.3 KB.
+
+Latency is a *separate* constraint and streaming resolves it at different scales.
+From the measured whole-window throughput (τ=2: 7.32 M MACs in 949 ms = **7.7
+MMAC/s** with ESP-DL's plain-C kernels), per-frame cost if streamed:
+
+| model | MACs/frame | estimated ms/frame | real time (10 ms budget)? |
+|---|---|---|---|
+| BC-ResNet-1 | 24.6 k | ~3.2 ms | yes, with room for the front-end |
+| BC-ResNet-2 | 72.5 k | ~9.4 ms | borderline — no headroom for log-mel |
+| BC-ResNet-3 | 143.8 k | ~18.7 ms | no |
+| BC-ResNet-8 | 850.7 k | ~110 ms | no — fits in memory, not in time |
+
+**Treat that column as an estimate, not a result.** It extrapolates a whole-window
+throughput that includes the 16 % Transpose tax and the quantize/requantize overhead,
+and streaming will have *worse* per-MAC efficiency: tiny per-call tensors mean poorer
+data locality and more fixed overhead per invocation. It needs measuring.
+
+## Prerequisite, now in place
+
+`BCResNet` and `BCBlock` take `causal=True`, which puts left-only padding on the stem
+(5-wide in time), on every `f1` temporal conv, and on the head's 5-wide temporal
+depthwise conv — the last place look-ahead hides. Verified:
+
+* parameter counts are **identical** to the non-causal models (only padding changes);
+* the non-causal path is untouched — existing checkpoints load and reproduce their
+  stored logits to 2.9e-06;
+* **zero look-ahead**: randomising frames ≥60 leaves every feature column before 60
+  bit-identical, where the non-causal model leaks 12 frames (120 ms) backwards.
+
+Causal BC-ResNet-1/2/3/8 are training on v2_12 with the official SGD recipe, so the
+accuracy cost of losing look-ahead is measured rather than assumed.

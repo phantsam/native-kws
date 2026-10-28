@@ -1,0 +1,6 @@
+# Causal BC-ResNet: the prerequisite for streaming execution. Same official SGD recipe
+# as the non-causal runs, so the only difference is the loss of look-ahead.
+v2_12_bcresnet-1-causal --task v2_12 --model bcresnet-1 --causal --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
+v2_12_bcresnet-2-causal --task v2_12 --model bcresnet-2 --causal --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
+v2_12_bcresnet-3-causal --task v2_12 --model bcresnet-3 --causal --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
+v2_12_bcresnet-8-causal --task v2_12 --model bcresnet-8 --causal --opt sgd --lr 0.1 --wd 1e-3 --bs 100 --smoothing 0
