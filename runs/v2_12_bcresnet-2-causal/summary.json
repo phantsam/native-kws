@@ -1,0 +1,12 @@
+{
+  "name": "v2_12_bcresnet-2-causal",
+  "params": 27284,
+  "best_by_valid": {
+    "valid": 97.32283464566929,
+    "test": 97.66871165644172,
+    "epoch": 195,
+    "which": "ema"
+  },
+  "last_test_raw": 97.66871165644172,
+  "last_test_ema": 97.66871165644172
+}

@@ -347,14 +347,18 @@ temporal convolution `f1` runs on the **frequency-averaged** signal
 Computed from the graph (`causal=True`, history = `(k_t - 1) * dilation` input columns
 per temporal conv, peak = history + a double-buffered working column):
 
-| model | params | accuracy | whole-window | streaming | reduction | fits 108 KB? |
-|---|---|---|---|---|---|---|
-| BC-ResNet-1 | 9,232 | 96.81 % | 31.6 KB | **3.0 KB** | 10x | both |
-| BC-ResNet-2 | 27,284 | 98.02 % | 63.1 KB | **5.9 KB** | 11x | both |
-| BC-ResNet-3 | 54,168 | 98.36 % | 94.7 KB | **8.8 KB** | 11x | streaming only |
-| BC-ResNet-4 | 89,884 | — | 126.2 KB | **11.7 KB** | 11x | streaming only |
-| BC-ResNet-6 | 187,812 | — | 189.4 KB | **17.5 KB** | 11x | streaming only |
-| BC-ResNet-8 | 321,068 | 98.67 % | 252.5 KB (391 KB arena) | **23.3 KB** | 11x | streaming only |
+| model | params | non-causal | **causal** | whole-window | streaming | reduction | fits 108 KB? |
+|---|---|---|---|---|---|---|---|
+| BC-ResNet-1 | 9,232 | 96.81 % | 96.44 % | 31.6 KB | **3.0 KB** | 10x | both |
+| BC-ResNet-2 | 27,284 | 98.02 % | **97.67 %** | 63.1 KB | **5.9 KB** | 11x | both |
+| BC-ResNet-3 | 54,168 | 98.36 % | 98.18 % | 94.7 KB | **8.8 KB** | 11x | streaming only |
+| BC-ResNet-4 | 89,884 | — | — | 126.2 KB | **11.7 KB** | 11x | streaming only |
+| BC-ResNet-6 | 187,812 | — | — | 189.4 KB | **17.5 KB** | 11x | streaming only |
+| BC-ResNet-8 | 321,068 | 98.67 % | 98.59 % | 252.5 KB (391 KB arena) | **23.3 KB** | 11x | streaming only |
+
+The causal column is the accuracy a streaming deployment actually gets, since streaming
+cannot use look-ahead (E33). Whole-window memory is unchanged by causality - only the
+padding moves.
 
 **Streaming puts BC-ResNet-8 on a plain ESP32, which cannot hold it whole-window at
 any quantization setting.** That is a stronger demonstration than running it on an
@@ -389,5 +393,18 @@ depthwise conv — the last place look-ahead hides. Verified:
 * **zero look-ahead**: randomising frames ≥60 leaves every feature column before 60
   bit-identical, where the non-causal model leaks 12 frames (120 ms) backwards.
 
-Causal BC-ResNet-1/2/3/8 are training on v2_12 with the official SGD recipe, so the
-accuracy cost of losing look-ahead is measured rather than assumed.
+**The accuracy cost of losing look-ahead is measured, not assumed** (E33). Causal
+BC-ResNet-1/2/3/8 trained on v2_12 with the official SGD recipe, identical to their
+non-causal counterparts:
+
+| model | non-causal | causal | cost | last EMA, non-causal -> causal |
+|---|---|---|---|---|
+| BC-ResNet-1 | 96.81 | 96.44 | **-0.37** | 96.99 -> 96.56 (-0.43) |
+| BC-ResNet-2 | 98.02 | 97.67 | **-0.35** | 98.02 -> 97.67 (-0.35) |
+| BC-ResNet-3 | 98.36 | 98.18 | **-0.18** | 98.40 -> 98.12 (-0.29) |
+| BC-ResNet-8 | 98.67 | 98.59 | **-0.08** | 98.83 -> 98.63 (-0.20) |
+
+Streaming therefore costs **0.08-0.37 points**, and the cost shrinks as the model grows -
+larger models have enough capacity to make up for the missing 120 ms of future context.
+So the streaming deployment target is causal BC-ResNet-2 at **97.67 %**, and the int8
+measurement of that model on the board is the remaining number.
