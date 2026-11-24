@@ -1,6 +1,6 @@
 # NativeKWS
 
-Keyword spotting model designed to be competitive with large SOTA models while staying deployable on an ESP32-S3 + INMP441 microphone.
+Keyword spotting model designed to be competitive with large SOTA models while staying deployable on a plain ESP32 + INMP441 microphone.
 
 **Final model: NativeKWS-H + NASS (301 K parameters)**
 * BC-ResNet-depth convolutional front-end → two bidirectional Mamba (selective state-space) blocks.
@@ -19,13 +19,24 @@ Also explored (see `docs/`): BC-SSM (selective SSM inside the BC-ResNet broadcas
 
 V2-12 and V2-35 beat the best published from-scratch result (Keyword Mamba) by more than one standard deviation, with 17x fewer parameters. Caveats (details in `docs/EXPERIMENTS.md`, E6, E19, E21): distillation is not used by the published baselines; on V1-12 the result depends on the test-set protocol (97.95 on the testing_list protocol used by Keyword Mamba); the noise-robustness gains are not consistent at −5 dB SNR.
 
-## Hardware bring-up
+## On the chip, measured
 
-`HANDOFF.md` is a self-contained brief for whoever (or whatever) runs this on the
-machine the ESP32 is plugged into: wiring, `arduino-cli` flashing, the verification
-command, a failure-decode table, and the rules that keep the recorded set valid. A
-trained checkpoint is committed at `deploy/v2_12_native-H-nass-kdens/`, so that
-machine needs no GPU and no dataset.
+**BC-ResNet-2 (27,284 parameters) runs int8 on a plain ESP32 with no PSRAM and scores
+97.06 % on the full 4,890-clip V2-12 test set**, against 98.02 % in float on the same
+clips — 0.96 points of int8 cost, 951.6 ms per 1-second window, a 98.64 KB activation
+arena, weights in flash (`docs/EXPERIMENTS.md` E32). The chip is bit-exact with esp-ppq's
+host simulation on all 4,890 clips.
+
+The 301 K final model does **not** fit this chip whole-window at any quantization setting;
+streaming execution reduces the peak from 252.5 KB to 23.3 KB, which is the open
+engineering contribution (`docs/ONCHIP.md`). The causal models streaming requires cost
+0.08–0.37 points (E33).
+
+[`HANDOFF.md`](HANDOFF.md) indexes the two self-contained briefs: the GPU server
+([`docs/HANDOFF_TRAINING.md`](docs/HANDOFF_TRAINING.md)) and the computer the board plugs
+into ([`docs/HANDOFF_DEVICE.md`](docs/HANDOFF_DEVICE.md)). A trained checkpoint is
+committed at `deploy/v2_12_native-H-nass-kdens/`, so the device machine needs no GPU and
+no dataset.
 
 ## Documentation
 * [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): all models, equations, design rationale, novelty assessment
@@ -33,8 +44,11 @@ machine needs no GPU and no dataset.
 * [`docs/RESULTS.md`](docs/RESULTS.md): auto-generated results tables (`python scripts/collect_results.py`)
 * [`docs/LITERATURE.md`](docs/LITERATURE.md): literature notes behind the design decisions, with provenance tags and an explicit scope caveat (not a systematic review)
 * [`docs/DATASET.md`](docs/DATASET.md): protocol for the real-microphone (INMP441) test set — replay design, condition grid, pre-registered validity rules
-* [`HANDOFF.md`](HANDOFF.md): hardware bring-up brief for the machine with the board attached
-* [`docs/ONCHIP.md`](docs/ONCHIP.md): milestone 1 on the ESP32 — run the network from flashed inputs, no microphone
+* [`HANDOFF.md`](HANDOFF.md): index of the two machine-specific handoffs, plus the current headline numbers
+* [`docs/HANDOFF_TRAINING.md`](docs/HANDOFF_TRAINING.md): the GPU server — environment, dataset caches, job queue, which checkpoint backs which number, the export pipeline
+* [`docs/HANDOFF_DEVICE.md`](docs/HANDOFF_DEVICE.md): the computer the ESP32 plugs into — ESP-IDF, quantization, flashing, the serial evaluation driver
+* [`docs/HANDOFF_MIC.md`](docs/HANDOFF_MIC.md): the deferred INMP441 microphone phase — wiring, flashing, verification
+* [`docs/ONCHIP.md`](docs/ONCHIP.md): the three on-chip milestones — run the network (done), measure test-set accuracy (done), streaming execution (open)
 
 ## Real-microphone test set
 
@@ -49,17 +63,18 @@ python -m rig.listen runs/v2_12_native-H-nass-kdens --port /dev/ttyUSB0   # spea
 
 Verified in simulation and against a virtual serial port (alignment median +1 sample
 under 230 ppm drift; bit-exact decoding; all six streamed keywords detected in
-order); **no audio recorded from hardware yet**. See
+order); **no audio recorded from hardware yet**. Deferred for now. See [`docs/HANDOFF_MIC.md`](docs/HANDOFF_MIC.md),
 [`docs/DATASET.md`](docs/DATASET.md) and [`rig/README.md`](rig/README.md).
 
 ## Setup
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
-.venv/bin/pip install numpy soundfile tqdm tensorboard pyyaml
+.venv/bin/pip install -r requirements-train.txt --extra-index-url https://download.pytorch.org/whl/cu128
 # data: Google Speech Commands v0.01 / v0.02 + official test sets under data/
 .venv/bin/python scripts/prepare_data.py
 ```
+`requirements-train.txt` pins the versions every number here was produced with. Full
+bootstrap for a fresh server: [`docs/HANDOFF_TRAINING.md`](docs/HANDOFF_TRAINING.md) §10.
 
 ## Train
 ```bash

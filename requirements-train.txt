@@ -1,0 +1,27 @@
+# Training-side Python for this server (docs/HANDOFF_TRAINING.md).
+# These are the versions every result in docs/RESULTS.md and docs/EXPERIMENTS.md was
+# produced with, on Python 3.12.3. torch comes from PyTorch's CUDA 12.8 index:
+#
+#   python3 -m venv .venv
+#   .venv/bin/pip install -r requirements-train.txt --extra-index-url https://download.pytorch.org/whl/cu128
+#
+# For a CPU-only machine (the microphone rig and the exports run fine without a GPU) use
+# the cpu index instead and drop the "+cu128" suffixes.
+#
+# The device side pins its own, different set in deploy/esp32_kws/requirements-host.txt
+# (Python 3.11 + esp-ppq). Do not merge the two: esp-ppq pins older torch/onnx.
+torch==2.11.0+cu128
+torchaudio==2.11.0+cu128
+numpy==2.5.3
+soundfile==0.14.0
+tqdm==4.70.1
+
+# export only (scripts/export_onchip.py)
+onnx==1.23.2
+onnxsim==0.8.1
+
+# rig/ only, for the microphone phase (docs/HANDOFF_MIC.md)
+pyserial==3.5
+
+# installed here but imported by nothing in the repo; listed so a rebuilt environment
+# matches this one exactly: tensorboard==2.21.0, PyYAML==6.0.3, onnxruntime==1.31.1

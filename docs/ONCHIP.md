@@ -1,5 +1,13 @@
 # Milestone 1: run the network on the ESP32, with no microphone
 
+> **Status, 2026-11-24: milestones 1 and 2 are done on a plain ESP32-D0WDQ6 with no
+> PSRAM; milestone 3 is not started.** BC-ResNet-2 predicts 4/4 embedded vectors (E32,
+> after the cross-layer equalization of E30) and scores **97.06 % on the full 4,890-clip
+> v2-12 test set on the chip**, 0.96 points below float, at 951.6 ms per window. This file
+> is the design and the rationale; the operational detail for the machine with the board
+> now lives in [`HANDOFF_DEVICE.md`](HANDOFF_DEVICE.md), which supersedes the build and
+> flashing instructions below where the two differ.
+
 **Goal.** Get a trained keyword-spotting network running on the ESP32, fed four
 log-mel inputs baked into flash, and confirm it predicts the same classes the host
 does. Then report how long one inference takes.
@@ -174,10 +182,11 @@ which prints the largest activation, so whether it fits is known before flashing
 
 ### Deploying BC-ResNet-2
 
-Note that `scripts/quantize_onchip.py` (on the `e26-esp32-bringup` branch) hard-codes
-`deploy/onchip/bcresnet8.onnx`, a path that no longer exists — the τ=8 export moved to
-`deploy/onchip/bcresnet-8/`, so the old default now fails loudly instead of silently
-loading the wrong model. Give it a `--src` argument pointing at the directory
+`scripts/quantize_onchip.py` is now on `main` and takes `--src <export dir>`, defaulting
+to `deploy/onchip/bcresnet-2`; it reads the ONNX, `calib_128.npy` and `test_vectors.npz`
+from that one directory and always writes `model.espdl`, so the embedded symbol stays
+`_binary_model_espdl_start`. (It used to hard-code `deploy/onchip/bcresnet8.onnx`, a path
+that no longer exists.) Give it a `--src` argument pointing at the directory
 you want (its `test_vectors.npz` and `calib_128.npy` must come from the *same*
 directory as the ONNX, or the calibration and the graph will not correspond):
 
@@ -291,9 +300,15 @@ quantization and nothing else. Host float32 accuracy: **98.02 %** on the full se
 
 ## Running it
 
-Build with `app_eval.cpp` in place of `app_main.cpp` (`SRCS app_eval.cpp` in
-`main/CMakeLists.txt`, same `models/model.espdl` embed), flash, then **close the
-serial monitor** and:
+Build with the eval server in place of `app_main.cpp`, flash, then **close the serial
+monitor** and run the host driver. The device project now selects it with a build-time
+switch and its own build directory — `idf.py -B build_eval -DKWS_APP=eval build` — rather
+than by swapping sources. Two things the board taught us (E32): the prepared
+`app_eval.cpp` below allocates a static 16 KB feature buffer **before** the model, which
+leaves too small a contiguous block for the arena on a PSRAM-less ESP32, and 2 Mbaud is
+above what a CP2102 bridge can carry. `deploy/esp32_kws/main/app_eval.cpp` is the
+corrected version: model first, feature buffer from the heap, 921600 baud with
+`--baud 921600` on the host side.
 
 ```bash
 # 19-minute smoke run first -- confirms the plumbing before committing 77 minutes
