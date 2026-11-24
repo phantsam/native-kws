@@ -1,7 +1,8 @@
 """Quantize one deploy/onchip/<model>/ export to an int8 .espdl for the plain ESP32 (docs/ONCHIP.md).
 
-Uses esp-ppq PTQ with target "c" (ESP-DL's C kernels, which is what the ESP32 runs),
-calibrated on that directory's calib_128.npy. The ONNX, calib_128.npy and
+Uses esp-ppq PTQ with target "c" by default (ESP-DL's C kernels, which is what the
+plain ESP32 runs; pass --target esp32s3 or esp32p4 for those chips), calibrated on that
+directory's calib_128.npy. The ONNX, calib_128.npy and
 test_vectors.npz all come from the one --src directory: they must belong together.
 The "yes" test vector is embedded as the model's test input so `model->test()` on
 the chip checks bit-exactness against PPQ.
@@ -32,34 +33,23 @@ ROOT = Path(__file__).resolve().parents[1]
 INPUT_SHAPE = [1, 1, 40, 101]
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--src", default=str(ROOT / "deploy" / "onchip" / "bcresnet-2"),
-                    help="one export directory: <model>.onnx + calib_128.npy + test_vectors.npz")
-    ap.add_argument("--out", default=str(ROOT / "deploy" / "esp32_kws" / "main" / "models" / "model.espdl"))
-    ap.add_argument("--int16-ops", nargs="*", default=[],
-                    help="ONNX node names to dispatch to w16a16 (mixed precision); default is all-int8")
-    args = ap.parse_args()
-
+def quantize(src, out, target="c", int16_ops=(), error_report=True, verbose=1):
+    """Quantize the export in `src` to `out` (.espdl); returns the quantized esp-ppq graph."""
     setting = QuantizationSettingFactory.espdl_setting()
-    for name in args.int16_ops:
-        setting.dispatching_table.append(name, get_target_platform("c", quant_type="w16a16"))
-    src = Path(args.src)
+    for name in int16_ops:
+        setting.dispatching_table.append(name, get_target_platform(target, quant_type="w16a16"))
+    src = Path(src)
     onnx_files = sorted(src.glob("*.onnx"))
     if len(onnx_files) != 1:
         raise SystemExit(f"expected exactly one .onnx in {src}, found {[f.name for f in onnx_files]}")
-    print(f"source: {onnx_files[0]}")
-    out = Path(args.out)
+    print(f"source: {onnx_files[0]}  target: {target}")
+    out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
 
     calib = np.load(src / "calib_128.npy").astype(np.float32).reshape(-1, *INPUT_SHAPE[1:])
     print(f"calibration tensors: {calib.shape}, range [{calib.min():.3f}, {calib.max():.3f}]")
     calib_list = [torch.from_numpy(c[None]) for c in calib]  # each [1,1,40,101]
-
-    tv = np.load(src / "test_vectors.npz")
-    tv_in = tv["feat"].astype(np.float32).reshape(-1, *INPUT_SHAPE[1:])
-    tv_logits = tv["logits"]
-    tv_labels = tv["label"]
+    tv_in = np.load(src / "test_vectors.npz")["feat"].astype(np.float32).reshape(-1, *INPUT_SHAPE[1:])
 
     # esp-ppq re-saves the ONNX it is given, so hand it a copy: deploy/onchip/* must stay untouched.
     tmp = Path(tempfile.mkdtemp())
@@ -73,17 +63,36 @@ def main():
         calib_steps=len(calib_list),
         input_shape=INPUT_SHAPE,
         inputs=[torch.from_numpy(tv_in[0:1])],
-        target="c",
+        target=target,
         quant_type="w8a8",
         setting=setting,
         collate_fn=lambda x: x.to("cpu"),
         device="cpu",
-        error_report=True,
+        error_report=error_report,
         export_test_values=True,
-        verbose=1,
+        verbose=verbose,
     )
 
     shutil.rmtree(tmp, ignore_errors=True)
+    return graph
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--src", default=str(ROOT / "deploy" / "onchip" / "bcresnet-2"),
+                    help="one export directory: <model>.onnx + calib_128.npy + test_vectors.npz")
+    ap.add_argument("--out", default=str(ROOT / "deploy" / "esp32_kws" / "main" / "models" / "model.espdl"))
+    ap.add_argument("--target", default="c", help='esp-ppq target: "c" (plain ESP32), "esp32s3", "esp32p4"')
+    ap.add_argument("--int16-ops", nargs="*", default=[],
+                    help="ONNX node names to dispatch to w16a16 (mixed precision); default is all-int8")
+    args = ap.parse_args()
+
+    graph = quantize(args.src, args.out, args.target, args.int16_ops)
+    out = Path(args.out)
+    tv = np.load(Path(args.src) / "test_vectors.npz")
+    tv_in = tv["feat"].astype(np.float32).reshape(-1, *INPUT_SHAPE[1:])
+    tv_logits = tv["logits"]
+    tv_labels = tv["label"]
 
     executor = TorchExecutor(graph=graph, device="cpu")
     results = []
